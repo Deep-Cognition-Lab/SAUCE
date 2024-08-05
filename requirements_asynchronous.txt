@@ -1,0 +1,15 @@
+bitsandbytes==0.39.1
+datasets
+loralib
+sentencepiece
+git+https://github.com/huggingface/transformers
+accelerate>=0.21.0
+git+https://github.com/huggingface/peft.git
+tokenizers==0.13.3
+openai==0.27.7
+python-dotenv==1.0.0
+termcolor==2.3.0
+pandas==2.0.3
+chardet
+protobuf
+scipy

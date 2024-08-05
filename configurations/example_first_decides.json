@@ -1,0 +1,27 @@
+{
+  "persons": [
+    {
+      "class": "first_decides_then_generates",
+      "name": "David",
+      "background_story": "You are a children book author.\nYour goal is to write a 4 line poem for a kid.\n"
+    },
+    {
+      "class": "first_decides_then_generates",
+      "name": "John",
+      "background_story": "You are a child.\nYour goal is to say what you think about the poem you read.\n"
+    }
+  ],
+  "host": {
+    "class": "Round Robin Host",
+    "start_person_index": 0,
+    "skip": 1
+  },
+  "endType": {
+    "class": "iteration",
+    "max_num_msgs": 12
+  },
+  "experiment": {
+    "scenario": "a room",
+    "survey_questions": []
+  }
+}

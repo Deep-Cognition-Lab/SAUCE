@@ -1,0 +1,52 @@
+{
+  "persons": [
+    {
+      "class": "fake_person",
+      "name": "David",
+      "background_story": "You are going to say things from below",
+      "things_to_say": [
+        "I am David",
+        "I love apples",
+        "Because they are funny",
+        "I love apples",
+        "My name is David"
+      ]
+    },
+    {
+      "class": "fake_person",
+      "name": "John",
+      "background_story": "You are going to say things from below",
+      "things_to_say": [
+        "Hi, I am John",
+        "Why do you like them?",
+        "This is weird",
+        "David loves apples",
+        "My name is john"
+      ]
+    }
+  ],
+  "host": {
+    "class": "Round Robin Host",
+    "start_person_index": 0,
+    "skip": 1
+  },
+  "endType": {
+    "class": "iteration",
+    "max_num_msgs": 6
+  },
+  "experiment": {
+    "scenario": "You are in a room",
+    "survey_questions": [
+      {
+        "id": "conclusion",
+        "iterations": [-1],
+        "question": "Write what is your conclusion"
+      },
+      {
+        "id": "name",
+        "iterations": [6],
+        "question": "What is your name?"
+      }
+    ]
+  }
+}
