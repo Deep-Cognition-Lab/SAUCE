@@ -1,11 +1,6 @@
 # SAUCE 🍝: Synchronous and Asynchronous User-Customizable Environment for Multi-Agent LLM Interaction
 
-## Background:
-
 The system we are developing aims to facilitate the execution and replication of experiments in the fields of Social Psychology and Behavioral Economics, utilizing LLM (Large language model) as participant.
-
-## Explanation:
-
 Our goal is to create an advanced experimental system that enables researchers to conduct and reproduce experiments with ease, specifically focusing on the domains of Social Psychology and Behavioral Economics. By leveraging LLM, we aim to reproduce experiment result using those LLMs.
 
 ## Requirements
