@@ -14,6 +14,49 @@ Our goal is to create an advanced experimental system that enables researchers t
 - basic requirements are in `requirements.txt`
 - async requirements are in `requirements_asynchronous.txt`
 
+## Installation
+
+```bash
+pip install -r requirements.txt
+pip install -r requirements_asynchronous.txt
+```
+
+## Basic Usage
+
+Running the system using the CLI
+
+```bash
+python main.py PATH_TO_CONFIG_FILE
+```
+
+Here is all the CLI commands
+
+```text
+usage: SAUCE [-h] [-o OUTPUT] [--json | --no-json] [--output-json OUT_JSON] [-c | --console | --no-console] [--output-log OUT_LOG] [--batch-mode | --no-batch-mode | -bm]
+             [-v | --verbose | --no-verbose]
+             config
+
+Synchronous and Asynchronous User-Customizable Environment for Multi-Agent LLM Interaction
+
+positional arguments:
+  config                what config to run
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Where to save the experiment output
+  --json, --no-json     boolean field indicting rather saved or not to save a json version of the logs (default: False)
+  --output-json OUT_JSON
+                        File where to save the json form of the raw logs
+  -c, --console, --no-console
+                        Enable output to std output (default: True)
+  --output-log OUT_LOG  Where to save the created log
+  --batch-mode, --no-batch-mode, -bm
+                        Change the running exp to use Batch mode person (default: False)
+  -v, --verbose, --no-verbose
+
+```
+
 ## Features:
 
 Our system will focus on the following key features to enhance the experimentation process in the target domain:
