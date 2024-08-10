@@ -14,8 +14,8 @@ INSTRUCTION_INPUT_RESPONSE_PATTERN = "instruction-input-response prompt pattern"
 DEFAULT_PROMPT_PATTERN = "default"
 
 
-class GroupDiscussant(InnerSchedulerAsynchronousPerson):
-    PERSON_TYPE = "group_discussant"
+class AsynchronousGroupDiscussant(InnerSchedulerAsynchronousPerson):
+    PERSON_TYPE = "async_group_discussant"
 
     def __init__(self, background_story: str, name: str, opinion: str,
                  experiment_start_time: str,
@@ -104,9 +104,9 @@ class GroupDiscussant(InnerSchedulerAsynchronousPerson):
     def should_generate_answer(self, context: str) -> bool:
         """
         Decides whether to currently generate an answer, based on the context,
-        using self.inner_scheduler_model.
+        using self.scheduling_model.
         """
-        output = self.inner_scheduler_model.generate(context)
+        output = self.scheduling_model.generate(context)
         # log.debug(f"Raw scheduling decision was: \n'''\n{output}\n'''\n")
         scheduling_decision = self._customized_model_post_process_output(output)
         return bool(scheduling_decision.strip()) and \
