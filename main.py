@@ -110,6 +110,15 @@ def _arguments_parsing():
         default=False,
         help="Change the running exp to use Batch mode person"
     )
+
+    parser.add_argument(
+        "--pretty-print",
+        "-pp",
+        dest="pp",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Prints the results in pretty json format with indentation"
+    )
     parser.add_argument(
         "-v",
         "--verbose",
@@ -139,6 +148,7 @@ if __name__ == '__main__':
         exp = experiment_cls.load_from_string(json.dumps(conf_json))
     except Exception:
         logger.exception("Unable to load experiment")
+        exit(-1)
     logger.info("running experiment")
     experiment_output = None
     try:
@@ -146,4 +156,5 @@ if __name__ == '__main__':
     except Exception:
         logger.exception("Unhandled exception while running experiment")
     if experiment_output:
-        json.dump(experiment_output, arguments.output, indent=4)
+        pp_dict = {"indent": 4} if arguments.pp else {}
+        json.dump(experiment_output, arguments.output, **pp_dict)

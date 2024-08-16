@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from end_types.end_type import EndType
     from hosts.host import Host
     from session_rooms.session_room import SessionRoom
+    from session_rooms.batch_session_room import BatchSessionRoom
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ log = logging.getLogger(__name__)
 class BatchExperiment(Experiment):
     def __init__(self,
                  persons: list[BatchedPerson],
-                 session_room: SessionRoom,
+                 session_room: 'BatchSessionRoom',
                  host: Host,
                  end_type: EndType,
                  scenario: str,
@@ -29,6 +30,8 @@ class BatchExperiment(Experiment):
                  *args, **kwargs):
         super().__init__(persons, session_room, host, end_type, scenario, survey_questions, *args, **kwargs)
         self.persons = persons
+        self.session_room = session_room
+
 
     @staticmethod
     def _load_persons(persons_list: list[dict]) -> list[BatchedPerson]:
@@ -70,7 +73,23 @@ class BatchExperiment(Experiment):
         return BatchExperiment(persons, session_room, host, end, scenario, survey_questions)
 
     @classmethod
+    def _load_session_room(cls, session_room: dict | str = "batch", experiment: Experiment | None = None) -> 'SessionRoom':
+        session_room_cls = None
+        batch_base_class = get_session_room('batch')
+        if isinstance(session_room, str) or session_room is None:
+            session_room = "batch" if session_room is None else session_room
+            session_room_cls = get_session_room(session_room)
+        elif isinstance(session_room, dict) and 'name' in session_room:
+            session_room_cls = get_session_room(session_room.get("name"))
+
+        if not issubclass(session_room_cls, batch_base_class):
+            raise TypeError("Session room in Batch experiment must be of batch type")
+
+        return super()._load_session_room(session_room, experiment)
+
+    @classmethod
     def load_from_string(cls, config_string: str) -> BatchExperiment:
         loaded_exp: BatchExperiment = super().load_from_string(config_string)
-        loaded_exp.session_room = get_session_room('batch')(loaded_exp, loaded_exp.persons[0].batch_count)
+        log.debug(f"Updating session room batch size to {loaded_exp.persons[0].batch_count}")
+        loaded_exp.session_room.batch_size = loaded_exp.persons[0].batch_count
         return loaded_exp
