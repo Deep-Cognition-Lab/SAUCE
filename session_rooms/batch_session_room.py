@@ -16,10 +16,10 @@ log = logging.getLogger(__name__)
 
 
 class BatchSessionRoom(SessionRoom):
-    def __init__(self, experiment: BatchExperiment | None, batch_size: int):
+    def __init__(self, experiment: BatchExperiment | None, batch_size: int = 0):
         super().__init__(experiment)
-        self.batch_size = batch_size
-        self.chat_rooms = [[] for _ in range(self.batch_size)]
+        self._batch_size = batch_size
+        self.chat_rooms = [[] for _ in range(self.batch_size)] if batch_size != 0 else []
 
     def run(self, save_session_file_name: str = None) -> list[ExperimentOutput]:
         log.info("Starting batch session (batch size %d)", self.batch_size)
@@ -47,8 +47,8 @@ class BatchSessionRoom(SessionRoom):
         for experiment_output in outputs:
             # Keep only the survey questions that should be asked at the current iteration.
             should_keep = lambda cur_len, trigger: (cur_len in trigger) or \
-                                                f"{trigger}".lower() == "always" or \
-                                                (-1 in trigger and self.experiment.end_type.did_end(self))
+                                                   f"{trigger}".lower() == "always" or \
+                                                   (-1 in trigger and self.experiment.end_type.did_end(self))
             survey_questions = [q for q in self.experiment.survey_questions \
                                 if should_keep(len(self.chat_room), q.get("iterations"))]
 
@@ -68,7 +68,7 @@ class BatchSessionRoom(SessionRoom):
                 log.info(survey_entry)
                 for i in range(len(self.chat_rooms)):
                     # Copy the chat room, so it can later "forget" the survey question.
-                     self.chat_rooms[i].append(survey_entry)
+                    self.chat_rooms[i].append(survey_entry)
 
                 for next_person in self.experiment.persons:
                     new_chat_entry = next_person.generate_answer(
@@ -77,13 +77,10 @@ class BatchSessionRoom(SessionRoom):
                         experiment_output.survey_question[-1].chat_entry.append(
                             new_chat_entry)
                         log.info(new_chat_entry)
-                        # remove the answer
-                        for i in  range(len(self.chat_rooms)):
-                            self.chat_rooms.pop()
                 # remove the question
-                for i in  range(len(self.chat_rooms)):
-                            self.chat_rooms.pop()
-        
+                for chat_room in self.chat_rooms:
+                    chat_room.pop()
+
     def iterate(self):
         next_person = self.experiment.host.get_curr_person_and_move_to_next()
         new_chat_entries = next_person.generate_answer(
@@ -98,3 +95,17 @@ class BatchSessionRoom(SessionRoom):
     @property
     def session_length(self) -> int:
         return len(min(self.chat_rooms, key=lambda room: len(room)))
+
+    @property
+    def batch_size(self) -> int:
+        return self._batch_size
+
+    @batch_size.setter
+    def batch_size(self, batch_size: int):
+        rooms_len = len(self.chat_rooms)
+        if batch_size > rooms_len:
+            for _ in range(batch_size - rooms_len):
+                self.chat_rooms.append([])
+            self._batch_size = batch_size
+        else:
+            raise ValueError("Batch size must be less than or equal to the current number of chat rooms.")

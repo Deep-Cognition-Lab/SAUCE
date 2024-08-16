@@ -84,6 +84,17 @@ class Experiment:
             log.warning("Some persons are of type Ba")
         return persons
 
+    @classmethod
+    def _load_session_room(cls, session_room: dict | str = "base", experiment: Experiment | None = None) -> \
+            'SessionRoom':
+        if isinstance(session_room, str) or session_room is None:
+            session_room = "base" if session_room is None else session_room
+            return get_session_room(session_room)(experiment)
+        elif isinstance(session_room, dict) and 'name' in session_room:
+            return get_session_room(session_room.get("name"))(experiment, **session_room)
+        else:
+            raise TypeError("Unknown session_room type")
+
     @staticmethod
     def _load_host(host_obj: Dict, persons: List[Person]) -> Host:
         host_cls = get_host_class(host_obj.get("class"))
@@ -115,15 +126,15 @@ class Experiment:
             raise TypeError()
 
         persons_obj: Optional[List[Dict[str, str]]] = exp_config.get("persons")
-        # session_room_obj = exp_config.get("sessionRoom")
+        session_room_obj = exp_config.get("sessionRoom")
         host_obj: Optional[Dict[str, str]] = exp_config.get("host")
         end_type_obj: Optional[Dict[str, str]] = exp_config.get("endType")
         experiment_type_obj: Optional[Dict[str, str]] = exp_config.get("experiment")
 
         if not persons_obj or not isinstance(persons_obj, list):
             raise TypeError("No persons")
-        # if not session_room_obj or not isinstance(session_room_obj, dict):
-        #     raise TypeError("No session room")
+        if not session_room_obj or not isinstance(session_room_obj, dict):
+            log.warning("No SessionRoom using experiment default")
         if not host_obj or not isinstance(host_obj, dict):
             raise TypeError("No host")
         if not end_type_obj or not isinstance(end_type_obj, dict):
@@ -137,7 +148,7 @@ class Experiment:
             survey_questions = experiment_type_obj.get("survey_questions", [])
 
         persons: List[Person] = cls._load_persons(persons_obj)
-        session_room: SessionRoom = get_session_room("base")(experiment=None)
+        session_room: SessionRoom = cls._load_session_room(session_room_obj, None)
         host: Host = cls._load_host(host_obj, persons)
         end: EndType = cls._load_end_type(end_type_obj)
         self = cls._load_experiment(experiment_type_obj, persons, session_room, host, end,
