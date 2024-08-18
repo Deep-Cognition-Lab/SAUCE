@@ -12,9 +12,8 @@ PASS_TURN_TOKEN = "<pass>"
 class FineTunedMafiaPlayer(FineTunedAsynchronousPerson):
 
     def __init__(self, model_path: str, background_story: str, name: str,
-                 pass_turn_token: str = PASS_TURN_TOKEN, **model_kwargs):
-        super().__init__(HuggingFaceModel(local_model_path=model_path, **model_kwargs),
-                         background_story, name)
+                 pass_turn_token: str = PASS_TURN_TOKEN, **kwargs):
+        super().__init__(model_path, background_story, name, **kwargs)
         self.pass_turn_token = pass_turn_token
 
     def create_prompt(self, experiment_scenario_not_used, chat_list: List[ChatEntry]) -> str:

@@ -1,19 +1,19 @@
 from typing import Union, List, TYPE_CHECKING
 from persons.asynchronous_persons.asynchronous_person import AsynchronousPerson
+from persons.asynchronous_persons.hugging_face_model import HuggingFaceModel
 from abc import ABC, abstractmethod
 from session_rooms.session_room import ChatEntry
 import logging
-if TYPE_CHECKING:  # meant to protect cyclic imports caused from typing
-    from persons.asynchronous_persons.hugging_face_model import HuggingFaceModel
 
 log = logging.getLogger(__name__)
 
 
 class FineTunedAsynchronousPerson(AsynchronousPerson, ABC):
-    def __init__(self, generation_model: HuggingFaceModel, background_story: str, name: str,
+
+    def __init__(self, model_path: str, background_story: str, name: str,
                  *args, **kwargs):
         super().__init__(background_story, name, *args, **kwargs)
-        self.generation_model = generation_model
+        self.generation_model = HuggingFaceModel(local_model_path=model_path)
 
     @abstractmethod
     def create_prompt(self, experiment_scenario: str, chat_list: List[ChatEntry]) -> str:

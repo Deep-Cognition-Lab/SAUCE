@@ -26,7 +26,7 @@ class InnerSchedulerMafiaPlayer(InnerSchedulerAsynchronousPerson):
                  **kwargs):
         super().__init__(background_story=background_story, name=name,
                          generation_model_name=generation_model_name,
-                         inner_scheduler_model_name=inner_scheduler_model_path, **kwargs)
+                         scheduling_model_name=inner_scheduler_model_path, **kwargs)
         self.pass_turn_token = pass_turn_token
 
     def create_context_for_scheduler(self, experiment_scenario_not_used, chat_list: List[ChatEntry]
@@ -44,11 +44,11 @@ class InnerSchedulerMafiaPlayer(InnerSchedulerAsynchronousPerson):
     def should_generate_answer(self, context: str) -> bool:
         """
         Decides whether to currently generate an answer, based on the context,
-        using self.inner_scheduler_model.
+        using self.scheduling_model.
         """
         if not context:
             return True  # No player has played yet, so first player can start
-        scheduling_decision = self.inner_scheduler_model.generate(context)
+        scheduling_decision = self.scheduling_model.generate(context)
         return bool(scheduling_decision.strip()) and \
             (self.generation_model.generate_without_special_tokens
              or self.pass_turn_token not in scheduling_decision)

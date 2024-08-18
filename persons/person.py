@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
+
 class Person(ABC):
     PERSON_TYPE = None
 
