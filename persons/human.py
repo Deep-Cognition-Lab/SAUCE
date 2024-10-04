@@ -16,6 +16,6 @@ class Human(Person):
         prompt = f"The experiment scenario is: {experiment_scenario}"
         if self.background_story:
             prompt += "\n" + "Don't forget your backstory: " + self.background_story
-        prompt += "\n" + "Please insert your answer:\n"
+        prompt += "\n" + f"Please insert your answer - {self.name}:\n"
         answer = input(prompt)
         return ChatEntry(entity=self, answer=answer, prompt=prompt)

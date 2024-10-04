@@ -13,7 +13,7 @@ class AsynchronousHuman(Human, AsynchronousPerson):
         :param unused_context: chat history, prompt, scenario, etc.
         :return: whether to currently generate an answer.
         """
-        user_want_to_answer = input("Would you like to add an answer? y/[n] ")
+        user_want_to_answer = input(f"{self.name}, Would you like to add an answer? y/[n] ")
         return user_want_to_answer.strip().lower() in ["y", "yes"]
 
     def generate_answer(self, experiment_scenario: str, chat_list: List[ChatEntry]) -> Union[ChatEntry, None]:

@@ -1,17 +1,17 @@
 {
   "persons": [
     {
-      "class": "asynchronous_human",
+      "class": "async_human_mafia",
       "name": "Sam",
       "background_story": "You like party games."
     },
     {
-      "class": "asynchronous_human",
+      "class": "async_human_mafia",
       "name": "Ariel",
       "background_story": "You are here only for the participation reward."
     },
     {
-      "class": "asynchronous_human",
+      "class": "async_human_mafia",
       "name": "Alex",
       "background_story": "You are doing us a favor by playing."
     }
