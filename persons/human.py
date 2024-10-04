@@ -15,7 +15,7 @@ class Human(Person):
     def generate_answer(self, experiment_scenario: str, chat_list: List[ChatEntry]) -> Union[ChatEntry, None]:
         prompt = f"The experiment scenario is: {experiment_scenario}"
         if self.background_story:
-            prompt += "\n" + "Don't forget you backstory: " + self.background_story
+            prompt += "\n" + "Don't forget your backstory: " + self.background_story
         prompt += "\n" + "Please insert your answer:\n"
         answer = input(prompt)
         return ChatEntry(entity=self, answer=answer, prompt=prompt)
