@@ -36,7 +36,7 @@ def __generate_person_dict():
         f_d_t_g.FirstDecidesThenGenerates.PERSON_TYPE: f_d_t_g.FirstDecidesThenGenerates,
         f_g_t_d.FirstGeneratesThenDecides.PERSON_TYPE: f_g_t_d.FirstGeneratesThenDecides,
         ph_d.GroupDiscussant.PERSON_TYPE: ph_d.GroupDiscussant,
-        ahm.AsynchronousHuman.PERSON_TYPE: ahm.AsynchronousHuman,
+        ahm.AsynchronousHumanMafia.PERSON_TYPE: ahm.AsynchronousHumanMafia,
         **get_batch_dict(),
     }
 
