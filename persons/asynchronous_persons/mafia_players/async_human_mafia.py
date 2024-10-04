@@ -1,5 +1,5 @@
 from persons.asynchronous_persons.async_human import AsynchronousHuman
-from typing import List
+from typing import List, Union
 from session_rooms.session_room import ChatEntry
 import logging
 
