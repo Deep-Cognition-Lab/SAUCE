@@ -23,12 +23,13 @@ class AsynchronousHumanMafia(AsynchronousHuman):
             self.rules_explained = True
         user_want_to_answer = input(f"{self.name}, here's a reminder about your backstory: "
                                     f"{self.background_story}.\n"
-                                    f"Would you like to add a message? y/[n]")
+                                    f"Would you like to add a message? y/[n] ")
         return user_want_to_answer.strip().lower() in ["y", "yes"]
 
     def generate_answer(self, experiment_scenario: str, chat_list: List[ChatEntry]) -> Union[ChatEntry, None]:
         if self.should_generate_answer(experiment_scenario):
-            answer = input(f"Enter your message now - {self.name}: ")
+            prompt = f"Enter your message now - {self.name}: "
+            answer = input(prompt)
             return ChatEntry(entity=self, answer=answer, prompt=prompt)
         else:
             return None
