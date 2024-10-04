@@ -214,10 +214,10 @@ logs/*
 #ignore analyze folder
 analyze/*
 !analyze/*.md
-#ignore configurations folder
-configurations/*
-!configurations/*.md
-!configurations/example*.json
+##ignore configurations folder
+#configurations/*
+#!configurations/*.md
+#!configurations/example*.json
 #ignore output folser
 output_files/*
 !output_files/*.md

@@ -1,0 +1,38 @@
+{
+  "persons": [
+    {
+      "class": "asynchronous_human",
+      "name": "Sam",
+      "background_story": "You like party games."
+    },
+    {
+      "class": "asynchronous_human",
+      "name": "Ariel",
+      "background_story": "You are here only for the participation reward."
+    },
+    {
+      "class": "asynchronous_human",
+      "name": "Alex",
+      "background_story": "You are doing us a favor by playing."
+    }
+  ],
+  "host": {
+    "class": "Round Robin Host",
+    "start_person_index": 0,
+    "skip": 1
+  },
+  "endType": {
+    "class": "iteration",
+    "max_num_msgs": 30
+  },
+  "experiment": {
+    "scenario": "You are playing the game of Mafia. Every round a player is eliminated by the mafia during Daytime, and a player is voted out by all remaining players at during Daytime.",
+    "survey_questions": [
+      {
+        "id": "vote",
+        "iterations": [10],
+        "question": "Who do you want to vote out?"
+      }
+    ]
+  }
+}
