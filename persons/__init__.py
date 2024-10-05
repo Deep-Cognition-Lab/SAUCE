@@ -38,7 +38,7 @@ def __generate_person_dict():
         f_g_t_d.FirstGeneratesThenDecides.PERSON_TYPE: f_g_t_d.FirstGeneratesThenDecides,
         ph_d.GroupDiscussant.PERSON_TYPE: ph_d.GroupDiscussant,
         ahm.AsynchronousHumanMafia.PERSON_TYPE: ahm.AsynchronousHumanMafia,
-        llm_mafia.LLMMafia.PERSON_TYPE: llm_mafia.LLMMafia
+        llm_mafia.LLMMafia.PERSON_TYPE: llm_mafia.LLMMafia,
         **get_batch_dict(),
     }
 
