@@ -54,6 +54,7 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
             time_and_name_prefix = f"] {self.name}: "
             if time_and_name_prefix in output:
                 output = output.split(time_and_name_prefix)[1]
+            output = output.split("## Instruction:")[0]
             return output.strip()
         else:
             raise NotImplementedError("Missing output template for used model")
