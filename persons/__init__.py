@@ -18,6 +18,7 @@ import persons.asynchronous_persons.experimental_example_persons.first_decides_t
 import persons.asynchronous_persons.experimental_example_persons.first_generates_then_decides as f_g_t_d
 import persons.asynchronous_persons.experimental_example_persons.group_discussant as ph_d
 import persons.asynchronous_persons.mafia_players.async_human_mafia as ahm
+from persons.asynchronous_persons.mafia_players import llm_mafia
 import persons.batch.batch_person
 from .batch import get_batch_dict
 
@@ -37,6 +38,7 @@ def __generate_person_dict():
         f_g_t_d.FirstGeneratesThenDecides.PERSON_TYPE: f_g_t_d.FirstGeneratesThenDecides,
         ph_d.GroupDiscussant.PERSON_TYPE: ph_d.GroupDiscussant,
         ahm.AsynchronousHumanMafia.PERSON_TYPE: ahm.AsynchronousHumanMafia,
+        llm_mafia.LLMMafia.PERSON_TYPE: llm_mafia.LLMMafia
         **get_batch_dict(),
     }
 
