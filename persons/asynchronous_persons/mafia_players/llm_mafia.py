@@ -109,7 +109,7 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
         output = self.inner_scheduler_model.generate(context)
         # log.debug(f"Raw scheduling decision was: \n'''\n{output}\n'''\n")
         scheduling_decision = self._customized_model_post_process_output(output)
-        log.debug(f"The model's post-processed scheduling_decision was: {scheduling_decision}")
+        log.warning(f"The model's post-processed scheduling_decision was: {scheduling_decision}")
         return bool(scheduling_decision.strip()) and \
             (self.generation_model.generate_without_special_tokens
              or self.pass_turn_token not in scheduling_decision)
