@@ -78,8 +78,7 @@ class PersonHuggingFace(BatchedPerson):
             key=f"{model_weights}_model",
             init_func=lambda: AutoModelForCausalLM.from_pretrained(
                 model_weights, device_map="auto", quantization_config=BitsAndBytesConfig(
-                    # load_in_8bit=True, bnb_8bit_compute_dtype=torch.bfloat16)))
-                    load_in_8bit=True, bnb_8bit_compute_dtype=torch.float32)))
+                    load_in_8bit=True, bnb_8bit_compute_dtype=torch.bfloat16)))
         # Padding is needed as we infer all the batch at once.
         self.model.config.pad_token_id = self.tokenizer.pad_token_id = self.tokenizer.unk_token_id
         self.tokenizer.padding_side = 'left'

@@ -42,7 +42,8 @@ class HuggingFaceModel:
                 self.special_token_ids = []
             # self.model = AutoModelForSeq2SeqLM.from_pretrained(pretrained_model_name)
             self.model = AutoModelForCausalLM.from_pretrained(pretrained_model_name,
-                                                              torch_dtype=torch.bfloat16)
+                                                              torch_dtype=torch.float32)
+                                                              # torch_dtype=torch.bfloat16)
         else:
             raise ValueError("Missing either model_path or pretrained_model_name")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
