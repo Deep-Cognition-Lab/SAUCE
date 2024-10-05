@@ -24,7 +24,7 @@ class AsynchronousHumanMafia(AsynchronousHuman):
         if not self.rules_explained:
             print(colored(experiment_scenario, color="blue"))
             self.rules_explained = True
-        user_want_to_answer = input(colored(f"{self.name}, your role is {self.role}"
+        user_want_to_answer = input(colored(f"{self.name}, your role is {self.role}, "
                                             f"here's a reminder about your backstory: "
                                             f"{self.background_story}.\n"
                                             f"Would you like to add a message? y/[n] ",
