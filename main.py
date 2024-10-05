@@ -14,6 +14,7 @@ from experiments.batch_experiment import BatchExperiment
 from experiments.experiment import Experiment
 from experiments.loggers.logger import ConsoleHandler, CsvFileHandler, OurLogger
 
+experiment_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
 def __init_logging_system(
         log_path: str,
@@ -69,7 +70,7 @@ def _arguments_parsing():
         "-o",
         "--output",
         type=argparse.FileType(mode="w"),
-        default=str(Path("./output_files/out.json")),
+        default=str(Path(f"./output_files/out_{experiment_timestamp}.json")),
         help="Where to save the experiment output"
     )
     parser.add_argument(
@@ -83,7 +84,7 @@ def _arguments_parsing():
         dest="out_json",
         type=str,
         required=False,
-        default=str(Path(".") / "output_files" / f"output.json"),
+        default=str(Path(".") / "output_files" / f"output_{experiment_timestamp}.json"),
         help="File where to save the json form of the raw logs",
     )
     parser.add_argument(
@@ -98,7 +99,7 @@ def _arguments_parsing():
         dest="out_log",
         type=str,
         required=False,
-        default=str(Path(".") / "logs" / f"output.log"),
+        default=str(Path(".") / "logs" / f"output_{experiment_timestamp}.log"),
         help="Where to save the created log"
     )
 
