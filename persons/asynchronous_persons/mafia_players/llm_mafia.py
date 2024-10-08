@@ -88,6 +88,11 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
                f"or do you prefer to wait for now and see what others will say? " \
                f"Reply only {self.use_turn_token} or {self.pass_turn_token} " \
                f"based on your decision!"
+        how_many_messages_by_it = sum([int(chat_entry.entity == self) for chat_entry in chat_list])
+        if len(chat_list) > 7 and how_many_messages_by_it == 0:
+            task += f"Make sure to sometimes choose {self.use_turn_token}!"
+        elif len(chat_list) > 15 and how_many_messages_by_it < 2:
+            task += f"Don't forget to choose {self.use_turn_token} once in a while!"
         if self.in_context_learning:
             task += f"\nHere is an example:\n" \
                     f"[10:35:40] Alex: Hello everyone! How are you?\n" \
