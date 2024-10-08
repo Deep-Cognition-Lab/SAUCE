@@ -102,6 +102,6 @@ class ConsoleHandler(logging.StreamHandler):
                 strip = lambda a: str(a).strip().rstrip(str('\n'))
                 kwargs_str = " ".join([f"{strip(key)}= {strip(value)}" for key, value in record.kwargs.items()])
                 log_entry += f"\n{kwargs_str=}"
-            # print(log_entry)  # TODO make sure it's ok I removed this printing
+            print(log_entry)  # TODO make sure it's ok I removed this printing
         except Exception:
             self.handleError(record)
