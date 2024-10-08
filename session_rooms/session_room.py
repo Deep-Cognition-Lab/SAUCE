@@ -30,7 +30,7 @@ class SessionRoom:
     def run(self, save_session_file_name: str = None) -> ExperimentOutput:
         """ Runs the session room and returns the generated chat as a dataframe """
         log.info("Session room is running")
-        print("\n\n\n\n\n\n\n\n" * 3)
+        print("\n\n\n\n\n\n\n\n" * 4)
         print(colored("Green is for management of the flow, like who's turn is it", "green"))
         print(colored("Blue is for addressing specific players,"
                       "like what you would see if we used different machines", "blue"))
