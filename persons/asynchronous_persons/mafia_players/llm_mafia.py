@@ -3,6 +3,7 @@ from typing import Union, List
 from persons.asynchronous_persons.inner_scheduler_asynchronous_person import \
     InnerSchedulerAsynchronousPerson
 from session_rooms.session_room import ChatEntry
+from termcolor import colored
 import logging
 
 log = logging.getLogger(__name__)
@@ -110,7 +111,7 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
         output = self.inner_scheduler_model.generate(context)
         # log.debug(f"Raw scheduling decision was: \n'''\n{output}\n'''\n")
         scheduling_decision = self._customized_model_post_process_output(output)
-        log.warning(f"The model's post-processed scheduling_decision was: {scheduling_decision}")
+        # log.warning(f"The model's post-processed scheduling_decision was: {scheduling_decision}")
         return bool(scheduling_decision.strip()) and \
             (self.generation_model.generate_without_special_tokens
              or self.pass_turn_token not in scheduling_decision)
@@ -123,14 +124,15 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
 
     def generate_answer(self, experiment_scenario: str, chat_list: List[ChatEntry]
                         ) -> Union[ChatEntry, None]:
+        print(colored(f"{self.name}'s turn", "green"))
         context = self.create_context_for_scheduler(experiment_scenario, chat_list)
         if self.should_generate_answer(context):
-            log.info(f"Model chose to generate! ({self.name}'s turn)")
+            log.info(colored(f"Model chose to generate! ({self.name}'s turn)", "green"))
             prompt = self.create_prompt(experiment_scenario, chat_list)
             output = self.generation_model.generate(prompt)
             answer = self._customized_model_post_process_output(output)
             current_time = time.strftime("%H:%M:%S")
             return ChatEntry(entity=self, prompt=prompt, answer=answer, time=current_time)
         else:
-            log.info(f"Model chose not to generate... ({self.name}'s turn)")
+            log.info(colored(f"Model chose not to generate... ({self.name}'s turn)", "green"))
             return None

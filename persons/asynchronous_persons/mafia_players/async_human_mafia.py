@@ -21,17 +21,20 @@ class AsynchronousHumanMafia(AsynchronousHuman):
         :param experiment_scenario: the rules of the game of Mafia, in our case.
         :return: whether to currently generate an answer.
         """
-        if not self.rules_explained:
-            print(colored(experiment_scenario, color="blue"))
-            self.rules_explained = True
-        user_want_to_answer = input(colored(f"{self.name}, your role is {self.role}, "
-                                            f"here's a reminder about your backstory: "
-                                            f"{self.background_story}.\n"
-                                            f"Would you like to add a message? y/[n] ",
+        # if not self.rules_explained:
+        #     print(colored(experiment_scenario, color="blue"))
+        #     self.rules_explained = True
+        # user_want_to_answer = input(colored(f"{self.name}, your role is {self.role}, "
+        #                                     f"here's a reminder about your backstory: "
+        #                                     f"{self.background_story}.\n"
+        #                                     f"Would you like to add a message? y/[n] ",
+        #                                     color="blue"))
+        user_want_to_answer = input(colored(f"Would you like to add a message? y/[n] ",
                                             color="blue"))
         return user_want_to_answer.strip().lower() in ["y", "yes"]
 
     def generate_answer(self, experiment_scenario: str, chat_list: List[ChatEntry]) -> Union[ChatEntry, None]:
+        print(colored(f"{self.name}'s turn", "green"))
         if self.should_generate_answer(experiment_scenario):
             prompt = f"Enter your message now - {self.name}: "
             answer = input(colored(prompt, color="blue"))

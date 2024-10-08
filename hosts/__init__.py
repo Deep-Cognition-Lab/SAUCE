@@ -5,12 +5,14 @@ from typing import Type
 import hosts.host
 import hosts.random
 import hosts.round_robin
+import hosts.mafia_host
 
 @cache
 def get_hosts()-> dict[str,Type[hosts.host.Host]]:
     return {
         hosts.round_robin.HostRoundRobin.NAME: hosts.round_robin.HostRoundRobin,
-        hosts.random.HostRandom.NAME: hosts.random.HostRandom
+        hosts.random.HostRandom.NAME: hosts.random.HostRandom,
+        hosts.mafia_host.MafiaHost.NAME: hosts.mafia_host.MafiaHost
     }
 
 @cache

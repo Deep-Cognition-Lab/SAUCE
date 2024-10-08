@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 
 from session_rooms.ChatEntry import ChatEntry
 
+from termcolor import colored
+
 if TYPE_CHECKING:
     from experiments.experiment import Experiment
     from persons.person import Person
@@ -81,6 +83,7 @@ class SessionRoom:
                     experiment_output.survey_question[-1].chat_entry.append(
                         new_chat_entry)
                     log.info(new_chat_entry)
+        self.eliminate_player()  # TODO refactor to MafiaSessionRoom
 
     @staticmethod
     def load_from_pickle(save_session_file_name: str) -> SessionRoom:
@@ -103,6 +106,20 @@ class SessionRoom:
     @property
     def session_length(self) -> int:
         return len(self.chat_room)
+
+    def eliminate_player(self):  # TODO refactor to MafiaSessionRoom
+        names_dict = {f"{i}": person.name for i, person in enumerate(self.experiment.persons)}
+        elimination_prompt = ",   ".join([f"{i}. {name}" for i, name in names_dict.items()])
+        answer = input(colored(elimination_prompt, "green"))
+        if answer not in names_dict.keys():
+            answer = "1"  # TODO: this is not robust and should be changed
+        name_to_remove = names_dict[answer]
+        new_persons = [person for person in self.experiment.persons if person.name != name_to_remove]
+        self.experiment.persons = new_persons
+        self.experiment.host.persons = new_persons
+        self.experiment.host.current_person = self.experiment.host.persons[0]
+        self.experiment.host.current_person_index = 0
+        print(colored(f"{name_to_remove} was eliminated", "green"))
 
 
 @dataclass
