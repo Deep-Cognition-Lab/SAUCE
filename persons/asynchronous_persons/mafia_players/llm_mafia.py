@@ -90,7 +90,7 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
                f"based on your decision!"
         how_many_messages_by_it = sum([int(chat_entry.entity == self) for chat_entry in chat_list])
         if len(chat_list) > 7 and how_many_messages_by_it == 0:
-            task += f"Make sure to sometimes choose {self.use_turn_token}!"
+            task += f"This time you need to choose {self.use_turn_token}!"
         elif len(chat_list) > 15 and how_many_messages_by_it < 2:
             task += f"Don't forget to choose {self.use_turn_token} once in a while!"
         if self.in_context_learning:
