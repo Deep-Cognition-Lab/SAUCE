@@ -1,0 +1,52 @@
+{
+  "persons": [
+    {
+      "class": "async_human_mafia",
+      "name": "Noam",
+      "background_story": "",
+      "role": "bystander"
+    },
+    {
+      "class": "async_human_mafia",
+      "name": "Gili",
+      "background_story": "",
+      "role": "bystander"
+    },
+    {
+      "class": "llm_mafia",
+      "name": "Modi",
+      "background_story": "You are very competitive",
+      "role": "mafia"
+    },
+    {
+      "class": "async_human_mafia",
+      "name": "Gabi",
+      "background_story": "",
+      "role": "bystander"
+    }
+  ],
+  "host": {
+    "class": "Round Robin Host",
+    "start_person_index": 0,
+    "skip": 1
+  },
+  "endType": {
+    "class": "iteration",
+    "max_num_msgs": 30
+  },
+  "experiment": {
+    "scenario": "You are playing the game of Mafia. Every round a player is eliminated by the mafia during Daytime, and a player is voted out by all remaining players during Daytime.",
+    "survey_questions": [
+      {
+        "id": "nighttime",
+        "iterations": [10],
+        "question": "Now the mafia will secretly eliminate someone (no need to answer)"
+      },
+      {
+        "id": "vote",
+        "iterations": [25],
+        "question": "Time to vote! who will you vote for?"
+      }
+    ]
+  }
+}
