@@ -30,6 +30,14 @@ class SessionRoom:
     def run(self, save_session_file_name: str = None) -> ExperimentOutput:
         """ Runs the session room and returns the generated chat as a dataframe """
         log.info("Session room is running")
+        print("\n\n\n\n\n\n\n\n" * 3)
+        print(colored("Green is for management of the flow, like who's turn is it", "green"))
+        print(colored("Blue is for addressing specific players,"
+                      "like what you would see if we used different machines", "blue"))
+        print(colored("Red name", "red"), "is what the player really posted to the public")
+        print("\n")
+        print(colored("When it's your turn, use 'y' to choose to speak", "green"))
+        print("\n\n\n")
 
         output = ExperimentOutput()
         while not self.experiment.end_type.did_end(self):
@@ -109,10 +117,11 @@ class SessionRoom:
 
     def eliminate_player(self):  # TODO refactor to MafiaSessionRoom
         names_dict = {f"{i}": person.name for i, person in enumerate(self.experiment.persons)}
-        elimination_prompt = ",   ".join([f"{i}. {name}" for i, name in names_dict.items()])
+        elimination_options = ",   ".join([f"{i}. {name}" for i, name in names_dict.items()])
+        elimination_prompt = f"{elimination_options}\nAnd the person that was eliminated is: "
         answer = input(colored(elimination_prompt, "green"))
         if answer not in names_dict.keys():
-            answer = "1"  # TODO: this is not robust and should be changed
+            answer = "0"  # TODO: this is not robust and should be changed
         name_to_remove = names_dict[answer]
         new_persons = [person for person in self.experiment.persons if person.name != name_to_remove]
         self.experiment.persons = new_persons
