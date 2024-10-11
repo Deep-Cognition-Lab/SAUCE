@@ -1,7 +1,9 @@
 import torch
+print("Debug print: imported torch")
 from transformers import AutoTokenizer, AutoModelForCausalLM
+print("Debug print: imported AutoTokenizer, AutoModelForCausalLM")
 
-MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
+MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"  # remember it requires at least 32G memory and V-memory
 
 
 def preprocess_input(system_info, user_instruction):
@@ -26,7 +28,7 @@ def postprocess_output(decoded_output):
     assistant_prefix = "<|start_header_id|>assistant<|end_header_id|>"
     if assistant_prefix in decoded_output:
         decoded_output = decoded_output.split(assistant_prefix)[1]
-    return decoded_output.split("<|eot_id|>")[0]
+    return decoded_output.split("<|eot_id|>")[0].strip()
 
 
 def main():
@@ -75,6 +77,7 @@ def main():
                                       )
     print("Debug print: output decoded")
     print("Decoded output:", decoded_output)
+    print("Post processed output: ", postprocess_output(decoded_output))
 
 
 
