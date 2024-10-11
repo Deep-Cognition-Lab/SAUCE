@@ -15,6 +15,7 @@ REMAINING_PLAYERS_FILE = "remaining_players.txt"
 MAFIA_NAMES_FILE = "mafia_names.txt"
 PHASE_STATUS_FILE = "phase_status.txt"
 IS_GAME_OVER_FILE = "is_game_over.txt"
+PUBLIC_MANAGER_CHAT_FILE = "public_manager_chat.txt"
 PUBLIC_DAYTIME_CHAT_FILE = "public_daytime_chat.txt"
 PUBLIC_NIGHTTIME_CHAT_FILE = "public_nighttime_chat.txt"
 PERSONAL_CHAT_FILE_FORMAT = "{}_chat.txt"
@@ -95,6 +96,7 @@ def init_game():
     all_mafia_names_str = [player.name for player in players if player.is_mafia]
     (game_dir / MAFIA_NAMES_FILE).write_text("\n".join(all_mafia_names_str))
     (game_dir / PHASE_STATUS_FILE).write_text(NIGHTTIME)
+    touch_file_in_game_dir(PUBLIC_MANAGER_CHAT_FILE)
     touch_file_in_game_dir(PUBLIC_DAYTIME_CHAT_FILE)
     touch_file_in_game_dir(PUBLIC_NIGHTTIME_CHAT_FILE)
     touch_file_in_game_dir(IS_GAME_OVER_FILE)
@@ -105,7 +107,7 @@ def is_game_over(players):  # TODO maybe on host side it shouldn't be reading of
     # TODO: if all mafia members died (maybe in future we can divide game-over to mafia win or bystanders win
     (game_dir / REMAINING_PLAYERS_FILE).read_text()  # TODO continue!!!
 
-    return GAME_OVER in (game_dir / IS_GAME_OVER_FILE).read_text()
+    return
 
 
 def run_chat_round_between_players(players, chat_room):
@@ -139,19 +141,19 @@ def run_phase(players, voting_players, optional_votes_players, public_chat_file,
         run_chat_round_between_players(voting_players, public_chat_file)
     voted_out_player = get_voted_out_player(voting_players, optional_votes_players)
     players.remove(voted_out_player)
-    announce_voted_out_player(voted_out_player)  # TODO add a system message to the human interface (the one where all players can see)
+    announce_voted_out_player(voted_out_player)  # TODO add a system message to the human interface (the one where all players can see) (PUBLIC_MANAGER_CHAT_FILE)
 
 
 def run_nighttime(players):  # TODO validate these are only remaining players
     mafia_players = [player for player in players if player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
     bystanders = [player for player in players if not player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
-    announce_nighttime()  # TODO all players should have the announcement of phase, time left, and who will be able to chat and read
+    announce_nighttime()  # TODO all players should have the announcement of phase, time left, and who will be able to chat and read (PUBLIC_MANAGER_CHAT_FILE)
     run_phase(players, mafia_players, bystanders, game_dir / PUBLIC_NIGHTTIME_CHAT_FILE,
               NIGHTTIME_TIME_LIMIT_SECONDS)
 
 
 def run_daytime(players):
-    announce_daytime()  # TODO all players should have the announcement of phase, time left, and who will be able to chat and read
+    announce_daytime()  # TODO all players should have the announcement of phase, time left, and who will be able to chat and read (PUBLIC_MANAGER_CHAT_FILE)
     run_phase(players, players, players, game_dir / PUBLIC_DAYTIME_CHAT_FILE,
               DAYTIME_TIME_LIMIT_SECONDS)
 
@@ -164,6 +166,7 @@ def main():
     while not is_game_over(players):
         run_nighttime(players)
         run_daytime(players)
+    (game_dir / IS_GAME_OVER_FILE).write_text(GAME_OVER)
     run_end_of_game()
 
 
