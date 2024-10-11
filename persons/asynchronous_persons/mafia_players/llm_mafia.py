@@ -39,6 +39,7 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
             instruction = "Here is the speaking history so far, including [timestamps]:\n"
             for chat_entry in chat_list:
                 instruction += f"[{chat_entry.time}] {chat_entry.entity.name}: {chat_entry.answer}\n"
+            instruction += "Don't add the time, the timestamp or the [timestamp] in your answer!\n"  # TODO: not necessarily needed with all models, seemed relevant to Llama3.1
         instruction += task
         new_output_prefix = f"[{current_timestamp}] {self.name}: "  # won't be used by all models
         return self._create_customized_model_prompt_skeleton(system_info=system_info,
