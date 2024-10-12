@@ -21,6 +21,7 @@ PERSONAL_CHAT_FILE_FORMAT = "{}_chat.txt"
 PERSONAL_VOTE_FILE_FORMAT = "{}_vote.txt"
 # constant strings for info files
 NIGHTTIME = "NIGHTTIME"
+DAYTIME = "DAYTIME"
 VOTED_OUT = "VOTED_OUT"
 MAFIA_WINS_MESSAGE = "Mafia wins!"
 BYSTANDERS_WIN_MESSAGE = "Bystanders win!"
@@ -37,7 +38,7 @@ NIGHTTIME_TIME_LIMIT_SECONDS = int(NIGHTTIME_TIME_LIMIT_MINUTES * 60)
 DAYTIME_TIME_LIMIT_MINUTES = 5
 DAYTIME_TIME_LIMIT_SECONDS = int(DAYTIME_TIME_LIMIT_MINUTES * 60)
 # global variable for the game dir
-game_dir = None  # will be updated only if __name__ == __main__ (to not create new ones in imports)
+game_dir = Path()  # will be updated only if __name__ == __main__ (prevents new ones in imports)
 
 
 def touch_file_in_game_dir(file_name):
@@ -146,7 +147,8 @@ def run_chat_round_between_players(players, chat_room):
         with open(chat_room, "a") as f:
             f.writelines(lines)  # lines already include "\n"
         if player.did_cast_new_vote():
-            with open(game_dir / PUBLIC_MANAGER_CHAT_FILE, "a") as f:
+            # with open(game_dir / PUBLIC_MANAGER_CHAT_FILE, "a") as f:  # TODO validate chat_room is ok instead of PUBLIC_MANAGER_CHAT_FILE...
+            with open(chat_room, "a") as f:
                 voting_message = VOTING_MESSAGE_FORMAT.format(player.name, player.get_voted_player())
                 f.write(format_message(GAME_MANAGER_NAME, voting_message))
 
@@ -194,6 +196,7 @@ def announce_nighttime():
 
 
 def run_nighttime(players):  # TODO validate these are only remaining players
+    (game_dir / PHASE_STATUS_FILE).write_text(NIGHTTIME)
     mafia_players = [player for player in players if player.is_mafia]
     bystanders = [player for player in players if not player.is_mafia]
     announce_nighttime()  # TODO all players should have the announcement of phase, time left, and who will be able to chat and read (PUBLIC_MANAGER_CHAT_FILE)
@@ -210,6 +213,7 @@ def announce_daytime():
 
 
 def run_daytime(players):
+    (game_dir / PHASE_STATUS_FILE).write_text(DAYTIME)
     announce_daytime()  # TODO all players should have the announcement of phase, time left, and who will be able to chat and read (PUBLIC_MANAGER_CHAT_FILE)
     run_phase(players, players, players, game_dir / PUBLIC_DAYTIME_CHAT_FILE,
               DAYTIME_TIME_LIMIT_SECONDS)

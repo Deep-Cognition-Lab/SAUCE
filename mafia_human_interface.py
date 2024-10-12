@@ -20,6 +20,7 @@ GET_INPUT_MESSAGE = f"Enter a message to public chat, or '{VOTE_FLAG}' to cast a
 GET_VOTED_NAME_MESSAGE = "Make your vote! You can change your vote until elimination is done." \
                          "Enter your vote's number: "
 ROLE_REVELATION_MESSAGE = "Your role in the game is:"
+YOU_CANT_WRITE_MESSAGE = "You were voted out and can no longer write messages."
 
 
 # global variable
@@ -64,8 +65,8 @@ def is_voted_out(name):
 def display_lines_from_file(file_name, num_read_lines, display_color):
     with open(game_dir / file_name, "r") as f:
         lines = f.readlines()[num_read_lines:]
-    if len(lines) > 0:
-        print()  # prevents the messages from being printed in the same line as the middle of input
+    if len(lines) > 0:  # TODO if print() is deleted then remove this if!
+        # print()  # prevents the messages from being printed in the same line as the middle of input  # TODO validate it's not needed and delete if so
         for line in lines:
             print(colored(line, display_color))  # TODO maybe need display_line func for special format?
     return len(lines)
@@ -92,6 +93,7 @@ def collect_vote(name):
 def write_text_to_game(name, is_mafia):
     while not is_game_over():
         if is_voted_out(name):
+            print(colored(YOU_CANT_WRITE_MESSAGE, MANAGER_COLOR))
             break  # can't write or vote anymore (but can still read the game's content)
         if not is_mafia and is_nighttime():
             continue  # only mafia can communicate during nighttime
@@ -145,6 +147,10 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# TODO: comments after first run:
+#  * shouldn't add print() before empty lines... it's too much
+#  * maybe manager messages of votes should be in red/light blue (because only mafia should see at nighttime)
 
 # TODO remove if parallelism works
 """
