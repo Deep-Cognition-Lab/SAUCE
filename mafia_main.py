@@ -18,23 +18,22 @@ WHO_WINS_FILE = "who_wins.txt"
 PUBLIC_MANAGER_CHAT_FILE = "public_manager_chat.txt"
 PUBLIC_DAYTIME_CHAT_FILE = "public_daytime_chat.txt"
 PUBLIC_NIGHTTIME_CHAT_FILE = "public_nighttime_chat.txt"
+PERSONAL_STATUS_FILE_FORMAT = "{}_status.txt"
+# files that hosts read from and players write to
 PERSONAL_CHAT_FILE_FORMAT = "{}_chat.txt"
 PERSONAL_VOTE_FILE_FORMAT = "{}_vote.txt"
-PERSONAL_STATUS_FILE_FORMAT = "{}_status.txt"
 # constant strings for info files
 NIGHTTIME = "NIGHTTIME"
 VOTED_OUT = "VOTED_OUT"
-# GAME_OVER = "GAME_OVER"
 MAFIA_WINS_MESSAGE = "Mafia wins!"
 BYSTANDERS_WIN_MESSAGE = "Bystanders win!"
 GAME_MANAGER_NAME = "Game-Manager"
-RULES_OF_THE_GAME = "" # TODO: write those rules!!! (used by the human interface, but maybe also the model?...)
+RULES_OF_THE_GAME = "The rules of the game are: TODO WRITE THEM!"  # TODO: write those rules!!! (used by the human interface, but maybe also the model?...)
 # formats for saving texts
 TIME_FORMAT_FOR_TIMESTAMP = "%H:%M:%S"
-MESSAGE_FORMAT = "[{timestamp}] {name}: {message}"  # TODO make format for display_line, maybe using regex
+MESSAGE_FORMAT = "[{timestamp}] {name}: {message}"
 VOTING_MESSAGE_FORMAT = "{} voted for {}"
-# files that hosts read from and players write to
-# TODO: are there any?
+VOTED_OUT_MESSAGE_FORMAT = "{} was voted out. Their role was {}"
 
 
 # game constants
@@ -62,15 +61,12 @@ class Player:
         self.personal_vote_file_last_modified = os.path.getmtime(self.personal_vote_file)
         # status is whether the player was vote out
         self.personal_status_file = self._create_personal_file(PERSONAL_STATUS_FILE_FORMAT)
-        self.is_still_in_game = True  # TODO maybe not needed...
-        self.model = Model(name, is_mafia, is_model, **kwargs) if is_model else None
+        self.model = Model(name, is_mafia, **kwargs) if is_model else None
 
     def _create_personal_file(self, file_name_format):
         return touch_file_in_game_dir(file_name_format.format(self.name))
 
     def get_new_messages(self):
-        if not self.is_still_in_game:
-            return []  # TODO maybe None? maybe not needed because won't reach here?
         if not self.is_model:
             with open(self.personal_chat_file, "r") as f:
                 # the readlines method includes the "\n"
@@ -93,20 +89,12 @@ class Player:
 
     def eliminate(self):
         self.personal_status_file.write_text(VOTED_OUT)
-        self.is_still_in_game = False
 
 
 class Model:
 
-    def __init__(self, name, is_mafia, is_model, **kwargs):
+    def __init__(self, name, is_mafia, **kwargs):
         pass  # TODO !
-
-
-# def create_game_dir():  # TODO: I moved to beginning as global var, delete func if not used
-#     game_start_time = time.strftime("%d%m%y_%H%M")
-#     game_dir = f"{DIRS_PREFIX}/{game_start_time}"
-#     os.mkdir(game_dir, mode=0o777)
-#     return game_dir
 
 
 def init_game():
@@ -142,8 +130,8 @@ def is_win_by_mafia(mafia_players, bystanders):
 
 
 def is_game_over(players):
-    mafia_players = [player for player in players if player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
-    bystanders = [player for player in players if not player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
+    mafia_players = [player for player in players if player.is_mafia]
+    bystanders = [player for player in players if not player.is_mafia]
     return is_win_by_bystanders(mafia_players) or is_win_by_mafia(mafia_players, bystanders)
 
 
@@ -181,6 +169,13 @@ def get_voted_out_player(voting_players, optional_votes_players):
     return voted_out_player
 
 
+def announce_voted_out_player(voted_out_player):
+    role = "mafia" if voted_out_player.is_mafia else "bystander"
+    with open(game_dir / PUBLIC_MANAGER_CHAT_FILE, "a") as f:
+        voted_out_message = VOTED_OUT_MESSAGE_FORMAT.format(voted_out_player.name, role)
+        f.write(format_message(GAME_MANAGER_NAME, voted_out_message))
+
+
 def run_phase(players, voting_players, optional_votes_players, public_chat_file, time_limit_seconds):
     start_time = time.time()
     while time.time() - start_time < time_limit_seconds:
@@ -190,12 +185,28 @@ def run_phase(players, voting_players, optional_votes_players, public_chat_file,
     announce_voted_out_player(voted_out_player)  # TODO add a system message to the human interface (the one where all players can see) (PUBLIC_MANAGER_CHAT_FILE) (maybe announce its role too?...)
 
 
+def announce_nighttime():
+    # TODO: implement better, this is temporary, maybe generalize a function for all manager messages (code duplicates...)
+    with open(game_dir / PUBLIC_MANAGER_CHAT_FILE, "a") as f:
+        phase_message = f"Now it's Nighttime for {NIGHTTIME_TIME_LIMIT_MINUTES} minutes, " \
+                        f"only mafia can communicate and see messages and votes."  # TODO make constant
+        f.write(format_message(GAME_MANAGER_NAME, phase_message))
+
+
 def run_nighttime(players):  # TODO validate these are only remaining players
-    mafia_players = [player for player in players if player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
-    bystanders = [player for player in players if not player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
+    mafia_players = [player for player in players if player.is_mafia]
+    bystanders = [player for player in players if not player.is_mafia]
     announce_nighttime()  # TODO all players should have the announcement of phase, time left, and who will be able to chat and read (PUBLIC_MANAGER_CHAT_FILE)
     run_phase(players, mafia_players, bystanders, game_dir / PUBLIC_NIGHTTIME_CHAT_FILE,
               NIGHTTIME_TIME_LIMIT_SECONDS)
+
+
+def announce_daytime():
+    # TODO: implement better, this is temporary, maybe generalize a function for all manager messages (code duplicates...)
+    with open(game_dir / PUBLIC_MANAGER_CHAT_FILE, "a") as f:
+        phase_message = f"Now it's Daytime for {DAYTIME_TIME_LIMIT_MINUTES} minutes, " \
+                        f"everyone can communicate and see messages and votes."  # TODO make constant
+        f.write(format_message(GAME_MANAGER_NAME, phase_message))
 
 
 def run_daytime(players):
