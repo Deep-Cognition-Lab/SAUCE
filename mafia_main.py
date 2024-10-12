@@ -4,12 +4,9 @@ import sys
 import time
 from pathlib import Path
 
-DIRS_PREFIX = "./mafia/games"
-game_dir = Path(DIRS_PREFIX) / time.strftime("%d%m%y_%H%M")  # global variable
-game_dir.mkdir(mode=0o777)
-
 
 # files that host writes to and players read from
+DIRS_PREFIX = "./mafia/games"
 PLAYER_NAMES_FILE = "player_names.txt"
 REMAINING_PLAYERS_FILE = "remaining_players.txt"
 MAFIA_NAMES_FILE = "mafia_names.txt"
@@ -34,13 +31,13 @@ TIME_FORMAT_FOR_TIMESTAMP = "%H:%M:%S"
 MESSAGE_FORMAT = "[{timestamp}] {name}: {message}"
 VOTING_MESSAGE_FORMAT = "{} voted for {}"
 VOTED_OUT_MESSAGE_FORMAT = "{} was voted out. Their role was {}"
-
-
 # game constants
 NIGHTTIME_TIME_LIMIT_MINUTES = 2
 NIGHTTIME_TIME_LIMIT_SECONDS = int(NIGHTTIME_TIME_LIMIT_MINUTES * 60)
 DAYTIME_TIME_LIMIT_MINUTES = 5
 DAYTIME_TIME_LIMIT_SECONDS = int(DAYTIME_TIME_LIMIT_MINUTES * 60)
+# global variable for the game dir
+game_dir = None  # will be updated only if __name__ == __main__ (to not create new ones in imports)
 
 
 def touch_file_in_game_dir(file_name):
@@ -98,6 +95,9 @@ class Model:
 
 
 def init_game():
+    global game_dir
+    game_dir = Path(DIRS_PREFIX) / time.strftime("%d%m%y_%H%M")
+    game_dir.mkdir(mode=0o777)
     with open(sys.argv[1]) as f:
         config = json.load(f)
     persons = config["persons"]
