@@ -8,8 +8,8 @@ from functools import cache
 
 log = logging.getLogger(__name__)
 
-# DEFAULT_MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct"
-DEFAULT_MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
+DEFAULT_MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct"
+# DEFAULT_MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
 # prompts patterns:
 INSTRUCTION_INPUT_RESPONSE_PATTERN = "instruction-input-response prompt pattern"
 LLAMA3_PATTERN = "Llama 3 pattern"
@@ -91,7 +91,9 @@ class InnerSchedulerAsynchronousPerson(AsynchronousPerson, ABC):
         else:
             return None
 
-    def _get_prompt_template(self, model_name: str) -> str:
+    def _get_prompt_template(self, model_name: str = None) -> str:
+        if model_name is None:
+            model_name = self.generation_model_name  # default
         model_name = model_name.lower()
         if "phi-3" in model_name:
             return INSTRUCTION_INPUT_RESPONSE_PATTERN

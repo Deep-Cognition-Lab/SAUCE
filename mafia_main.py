@@ -14,17 +14,28 @@ PLAYER_NAMES_FILE = "player_names.txt"
 REMAINING_PLAYERS_FILE = "remaining_players.txt"
 MAFIA_NAMES_FILE = "mafia_names.txt"
 PHASE_STATUS_FILE = "phase_status.txt"
-IS_GAME_OVER_FILE = "is_game_over.txt"
+WHO_WINS_FILE = "who_wins.txt"
 PUBLIC_MANAGER_CHAT_FILE = "public_manager_chat.txt"
 PUBLIC_DAYTIME_CHAT_FILE = "public_daytime_chat.txt"
 PUBLIC_NIGHTTIME_CHAT_FILE = "public_nighttime_chat.txt"
 PERSONAL_CHAT_FILE_FORMAT = "{}_chat.txt"
 PERSONAL_VOTE_FILE_FORMAT = "{}_vote.txt"
-# # constant strings
+PERSONAL_STATUS_FILE_FORMAT = "{}_status.txt"
+# constant strings for info files
 NIGHTTIME = "NIGHTTIME"
-GAME_OVER = "GAME_OVER"
+VOTED_OUT = "VOTED_OUT"
+# GAME_OVER = "GAME_OVER"
+MAFIA_WINS_MESSAGE = "Mafia wins!"
+BYSTANDERS_WIN_MESSAGE = "Bystanders win!"
+GAME_MANAGER_NAME = "Game-Manager"
+RULES_OF_THE_GAME = "" # TODO: write those rules!!! (used by the human interface, but maybe also the model?...)
+# formats for saving texts
+TIME_FORMAT_FOR_TIMESTAMP = "%H:%M:%S"
+MESSAGE_FORMAT = "[{timestamp}] {name}: {message}"  # TODO make format for display_line, maybe using regex
+VOTING_MESSAGE_FORMAT = "{} voted for {}"
 # files that hosts read from and players write to
 # TODO: are there any?
+
 
 # game constants
 NIGHTTIME_TIME_LIMIT_MINUTES = 2
@@ -45,23 +56,24 @@ class Player:
         self.name = name
         self.is_mafia = is_mafia
         self.is_model = is_model
-        self.personal_chat_file = touch_file_in_game_dir(PERSONAL_CHAT_FILE_FORMAT.format(name))
+        self.personal_chat_file = self._create_personal_file(PERSONAL_CHAT_FILE_FORMAT)
         self.personal_chat_file_lines_read = 0
-        self.personal_vote_file = touch_file_in_game_dir(PERSONAL_VOTE_FILE_FORMAT.format(name))
-        self.is_still_in_game = True
+        self.personal_vote_file = self._create_personal_file(PERSONAL_VOTE_FILE_FORMAT)
+        self.personal_vote_file_last_modified = os.path.getmtime(self.personal_vote_file)
+        # status is whether the player was vote out
+        self.personal_status_file = self._create_personal_file(PERSONAL_STATUS_FILE_FORMAT)
+        self.is_still_in_game = True  # TODO maybe not needed...
         self.model = Model(name, is_mafia, is_model, **kwargs) if is_model else None
 
-    def _create_personal_file(self, file_name):
-        personal_file = game_dir / file_name
-        personal_file.touch()
-        return personal_file
+    def _create_personal_file(self, file_name_format):
+        return touch_file_in_game_dir(file_name_format.format(self.name))
 
     def get_new_messages(self):
         if not self.is_still_in_game:
             return []  # TODO maybe None? maybe not needed because won't reach here?
         if not self.is_model:
             with open(self.personal_chat_file, "r") as f:
-                # the read lines method includes the "\n"
+                # the readlines method includes the "\n"
                 lines = f.readlines()[self.personal_chat_file_lines_read:]
             self.personal_chat_file_lines_read += len(lines)
             return lines
@@ -70,6 +82,18 @@ class Player:
 
     def get_voted_player(self):
         return self.personal_vote_file.read_text().strip()
+
+    def did_cast_new_vote(self):
+        last_modified = os.path.getmtime(self.personal_vote_file)
+        if last_modified > self.personal_vote_file_last_modified:
+            self.personal_vote_file_last_modified = last_modified
+            return True
+        else:
+            return False
+
+    def eliminate(self):
+        self.personal_status_file.write_text(VOTED_OUT)
+        self.is_still_in_game = False
 
 
 class Model:
@@ -99,22 +123,44 @@ def init_game():
     touch_file_in_game_dir(PUBLIC_MANAGER_CHAT_FILE)
     touch_file_in_game_dir(PUBLIC_DAYTIME_CHAT_FILE)
     touch_file_in_game_dir(PUBLIC_NIGHTTIME_CHAT_FILE)
-    touch_file_in_game_dir(IS_GAME_OVER_FILE)
+    touch_file_in_game_dir(WHO_WINS_FILE)
     return players
 
 
-def is_game_over(players):  # TODO maybe on host side it shouldn't be reading of this file, but instead just a boolean flag that saves the file to notify players
-    # TODO: if all mafia members died (maybe in future we can divide game-over to mafia win or bystanders win
-    (game_dir / REMAINING_PLAYERS_FILE).read_text()  # TODO continue!!!
+def is_win_by_bystanders(mafia_players):
+    if len(mafia_players) == 0:
+        (game_dir / WHO_WINS_FILE).write_text(BYSTANDERS_WIN_MESSAGE)
+        return True
+    return False
 
-    return
+
+def is_win_by_mafia(mafia_players, bystanders):
+    if len(mafia_players) >= len(bystanders):
+        (game_dir / WHO_WINS_FILE).write_text(MAFIA_WINS_MESSAGE)
+        return True
+    return False
+
+
+def is_game_over(players):
+    mafia_players = [player for player in players if player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
+    bystanders = [player for player in players if not player.is_mafia]  # and player.is_still_in_game]  # TODO maybe no need for check is_still_in_game because all of them already are
+    return is_win_by_bystanders(mafia_players) or is_win_by_mafia(mafia_players, bystanders)
+
+
+def format_message(name, message):
+    timestamp = time.strftime(TIME_FORMAT_FOR_TIMESTAMP)
+    return MESSAGE_FORMAT.format(timestamp=timestamp, name=name, message=message) + "\n"
 
 
 def run_chat_round_between_players(players, chat_room):
     for player in players:
         lines = player.get_new_messages()
-        with open(chat_room, "w") as f:
+        with open(chat_room, "a") as f:
             f.writelines(lines)  # lines already include "\n"
+        if player.did_cast_new_vote():
+            with open(game_dir / PUBLIC_MANAGER_CHAT_FILE, "a") as f:
+                voting_message = VOTING_MESSAGE_FORMAT.format(player.name, player.get_voted_player())
+                f.write(format_message(GAME_MANAGER_NAME, voting_message))
 
 
 def get_voted_out_player(voting_players, optional_votes_players):
@@ -131,7 +177,7 @@ def get_voted_out_player(voting_players, optional_votes_players):
     (game_dir / REMAINING_PLAYERS_FILE).write_text("\n".join(remaining_players))
     # update player object status
     voted_out_player = {player.name: player for player in optional_votes_players}[voted_out_name]
-    voted_out_player.is_still_in_game = False
+    voted_out_player.eliminate()
     return voted_out_player
 
 
@@ -141,7 +187,7 @@ def run_phase(players, voting_players, optional_votes_players, public_chat_file,
         run_chat_round_between_players(voting_players, public_chat_file)
     voted_out_player = get_voted_out_player(voting_players, optional_votes_players)
     players.remove(voted_out_player)
-    announce_voted_out_player(voted_out_player)  # TODO add a system message to the human interface (the one where all players can see) (PUBLIC_MANAGER_CHAT_FILE)
+    announce_voted_out_player(voted_out_player)  # TODO add a system message to the human interface (the one where all players can see) (PUBLIC_MANAGER_CHAT_FILE) (maybe announce its role too?...)
 
 
 def run_nighttime(players):  # TODO validate these are only remaining players
@@ -158,16 +204,25 @@ def run_daytime(players):
               DAYTIME_TIME_LIMIT_SECONDS)
 
 
+def wait_for_players(players):
+    # TODO: this is only temporary,
+    #  maybe use something automatic, like all players need to sign up in their files...
+    input("As game manager, use Enter to start the game after all players have entered: ")
+
+
+def end_game():
+    print("Game has finished.")  # TODO: maybe log the game somehow? maybe save important details?..
+
+
 def main():
     if len(sys.argv) != 2:
-        raise ValueError(f"Usage: {__name__} <json configuration path>")  # TODO validate `__name__` works
+        raise ValueError(f"Usage: {Path(__file__).name} <json configuration path>")
     players = init_game()
-    wait_for_players()
+    wait_for_players(players)
     while not is_game_over(players):
         run_nighttime(players)
         run_daytime(players)
-    (game_dir / IS_GAME_OVER_FILE).write_text(GAME_OVER)
-    run_end_of_game()
+    end_game()
 
 
 if __name__ == '__main__':

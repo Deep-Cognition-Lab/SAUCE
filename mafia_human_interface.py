@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
 from mafia_main import DIRS_PREFIX, PLAYER_NAMES_FILE, MAFIA_NAMES_FILE, PHASE_STATUS_FILE, \
-    NIGHTTIME, IS_GAME_OVER_FILE, GAME_OVER, PUBLIC_MANAGER_CHAT_FILE, PUBLIC_DAYTIME_CHAT_FILE, \
+    NIGHTTIME, WHO_WINS_FILE, PUBLIC_MANAGER_CHAT_FILE, PUBLIC_DAYTIME_CHAT_FILE, \
     PUBLIC_NIGHTTIME_CHAT_FILE, PERSONAL_CHAT_FILE_FORMAT, PERSONAL_VOTE_FILE_FORMAT, \
-    REMAINING_PLAYERS_FILE
+    REMAINING_PLAYERS_FILE, format_message, VOTED_OUT, PERSONAL_STATUS_FILE_FORMAT, \
+    RULES_OF_THE_GAME
 from termcolor import colored
 from threading import Thread
 
@@ -13,13 +14,17 @@ DAYTIME_COLOR = "light_blue"
 NIGHTTIME_COLOR = "red"
 # user messages
 WELCOME_MESSAGE = "Welcome to the game of Mafia!"
-GET_USER_NAME_MESSAGE = "Who are you? Enter the name's number:"
+GET_USER_NAME_MESSAGE = "Who are you? Enter the name's number: "
+VOTE_FLAG = "VOTE"
+GET_INPUT_MESSAGE = f"Enter a message to public chat, or '{VOTE_FLAG}' to cast a vote: "
 GET_VOTED_NAME_MESSAGE = "Make your vote! You can change your vote until elimination is done." \
-                         "Enter your vote's number:"
+                         "Enter your vote's number: "
+ROLE_REVELATION_MESSAGE = "Your role in the game is:"
 
 
 # global variable
-input("Press enter only after the main game code started running...")  # to get the latest one  # TODO make in color
+input(colored("Press enter only after the main game code started running...",  # to get latest dir
+              MANAGER_COLOR))
 game_dir = max(Path(DIRS_PREFIX).glob("*"), key=os.path.getmtime)  # latest modified dir
 
 
@@ -40,16 +45,20 @@ def get_player_name_from_user(optional_player_names_file, input_message):
 
 
 def get_is_mafia(name):
-    player_names = (game_dir / PLAYER_NAMES_FILE).read_text().splitlines()
-    return name in player_names
+    mafia_names = (game_dir / MAFIA_NAMES_FILE).read_text().splitlines()  # removes the "\n"
+    return name in mafia_names
 
 
-def is_nighttime():  # TODO maybe not needed?.....
+def is_nighttime():
     return NIGHTTIME in (game_dir / PHASE_STATUS_FILE).read_text()
 
 
 def is_game_over():
-    return GAME_OVER in (game_dir / IS_GAME_OVER_FILE).read_text()
+    return bool((game_dir / WHO_WINS_FILE).read_text())  # if someone wins, the file isn't empty
+
+
+def is_voted_out(name):
+    return VOTED_OUT in (game_dir / PERSONAL_STATUS_FILE_FORMAT.format(name)).read_text()
 
 
 def display_lines_from_file(file_name, num_read_lines, display_color):
@@ -58,18 +67,21 @@ def display_lines_from_file(file_name, num_read_lines, display_color):
     if len(lines) > 0:
         print()  # prevents the messages from being printed in the same line as the middle of input
         for line in lines:
-            display_line(line, display_color)  # TODO: print with colored, but include processing of the format
+            print(colored(line, display_color))  # TODO maybe need display_line func for special format?
+    return len(lines)
 
 
-def read_game_text():
+def read_game_text(is_mafia):
     num_read_lines_manager = num_read_lines_daytime = num_read_lines_nighttime = 0
     while not is_game_over():
         num_read_lines_manager += display_lines_from_file(
             PUBLIC_MANAGER_CHAT_FILE, num_read_lines_manager, MANAGER_COLOR)
+        # only current phase file will have new messages, so no need to run expensive is_nighttime()
         num_read_lines_daytime += display_lines_from_file(
             PUBLIC_DAYTIME_CHAT_FILE, num_read_lines_daytime, DAYTIME_COLOR)
-        num_read_lines_nighttime += display_lines_from_file(
-            PUBLIC_NIGHTTIME_CHAT_FILE, num_read_lines_nighttime, NIGHTTIME_COLOR)
+        if is_mafia:  # only mafia can see what happens during nighttime
+            num_read_lines_nighttime += display_lines_from_file(
+                PUBLIC_NIGHTTIME_CHAT_FILE, num_read_lines_nighttime, NIGHTTIME_COLOR)
 
 
 def collect_vote(name):
@@ -77,44 +89,64 @@ def collect_vote(name):
     (game_dir / PERSONAL_VOTE_FILE_FORMAT.format(name)).write_text(voted_name)
 
 
-def write_text_to_game(name):
+def write_text_to_game(name, is_mafia):
     while not is_game_over():
+        if is_voted_out(name):
+            break  # can't write or vote anymore (but can still read the game's content)
+        if not is_mafia and is_nighttime():
+            continue  # only mafia can communicate during nighttime
         user_input = input(colored(GET_INPUT_MESSAGE, MANAGER_COLOR)).strip()
-        if user_input == VOTE_FLAG:
+        if user_input.lower() == VOTE_FLAG.lower():  # lower for robustness, even though it's caps
             collect_vote(name)
         else:
             with open(game_dir / PERSONAL_CHAT_FILE_FORMAT.format(name), "a") as f:
-                f.write(user_input + "\n")  # TODO: maybe writeline works too? maybe nicer than +"\n"?
+                f.write(format_message(name, user_input))
 
 
-def game_read_and_write_loop(name):
-    read_thread = Thread(target=read_game_text, args=())
-    # daemon: reading will be "behind scenes" and will allow writing to be stopped (e.g. by Ctrl+C)
-    read_thread.daemon = True
-    read_thread.start()
-    write_text_to_game(name)
+def game_read_and_write_loop(name, is_mafia):
+    # # TODO: if this works, maybe try to switch: write_text_to_game will be daemon, so we can "return" after is_voted_out instead of continuing reading the file again and again
+    # read_thread = Thread(target=read_game_text, args=(is_mafia,))
+    # # daemon: reading will be "behind scenes" and will allow writing to be stopped (e.g. by Ctrl+C)
+    # read_thread.daemon = True
+    # read_thread.start()
+    # write_text_to_game(name, is_mafia)   # TODO remove this section if it works
+    write_thread = Thread(target=write_text_to_game, args=(name, is_mafia))
+    # daemon: writing in the background, so it can stop when eliminated and still allow reading
+    write_thread.daemon = True
+    write_thread.start()
+    read_game_text(is_mafia)
+
+
+def welcome_player():
+    print(colored(WELCOME_MESSAGE, MANAGER_COLOR))
+    print(colored(RULES_OF_THE_GAME, MANAGER_COLOR))
+    name = get_player_name_from_user(PLAYER_NAMES_FILE, GET_USER_NAME_MESSAGE)
+    is_mafia = get_is_mafia(name)
+    role = "mafia" if is_mafia else "bystander"
+    role_color = NIGHTTIME_COLOR if is_mafia else DAYTIME_COLOR
+    print(colored(ROLE_REVELATION_MESSAGE, MANAGER_COLOR), colored(role, role_color))
+    return name, is_mafia
+
+
+def game_over_message():
+    who_wins = (game_dir / WHO_WINS_FILE).read_text().strip()
+    print(colored(who_wins, MANAGER_COLOR))
+    mafia_names = (game_dir / MAFIA_NAMES_FILE).read_text().splitlines()  # removes the "\n"
+    mafia_revelation = f"Mafia members were: " + ",".join(mafia_names)
+    print(colored(mafia_revelation, MANAGER_COLOR))
 
 
 def main():
     # TODO this part until around END should be in welcome_player() func (decide after choosing what it returns)
-    print(colored(WELCOME_MESSAGE, MANAGER_COLOR))
-    name = get_player_name_from_user(PLAYER_NAMES_FILE, GET_USER_NAME_MESSAGE)
-    is_mafia = get_is_mafia(name)
-    welcome_message(is_mafia)
-    game_read_and_write_loop(name)
-    while True:
-        if is_nighttime and is_mafia:
-            pass
-        elif not is_nighttime:
-            pass
-        else:  # it is nighttime but player is a bystander
-            continue
+    name, is_mafia = welcome_player()
+    game_read_and_write_loop(name, is_mafia)
+    game_over_message()
 
 
 if __name__ == '__main__':
     main()
 
-
+# TODO remove if parallelism works
 """
 The following is a piece of code that might solve my problem of reading and writing on the same time (+/-, the message is still cut in the middle if typing when it reads something...)
 """
