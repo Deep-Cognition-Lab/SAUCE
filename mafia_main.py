@@ -36,9 +36,9 @@ MESSAGE_FORMAT = "[{timestamp}] {name}: {message}"
 VOTING_MESSAGE_FORMAT = "{} voted for {}"
 VOTED_OUT_MESSAGE_FORMAT = "{} was voted out. Their role was {}"
 # game constants
-NIGHTTIME_TIME_LIMIT_MINUTES = 2
+NIGHTTIME_TIME_LIMIT_MINUTES = 1  # 2
 NIGHTTIME_TIME_LIMIT_SECONDS = int(NIGHTTIME_TIME_LIMIT_MINUTES * 60)
-DAYTIME_TIME_LIMIT_MINUTES = 5
+DAYTIME_TIME_LIMIT_MINUTES = 3  # 5
 DAYTIME_TIME_LIMIT_SECONDS = int(DAYTIME_TIME_LIMIT_MINUTES * 60)
 # global variable for the game dir
 game_dir = Path()  # will be updated only if __name__ == __main__ (prevents new ones in imports)
@@ -67,7 +67,6 @@ class Player:
         # status is whether the player was vote out
         self.personal_status_file = self._create_personal_file(PERSONAL_STATUS_FILE_FORMAT)
         self.model = LLMMafia("", name, get_role_string(is_mafia), **kwargs) if is_model else None  # currently using "" as backstory...
-
 
     def _create_personal_file(self, file_name_format):
         return touch_file_in_game_dir(file_name_format.format(self.name))
@@ -227,6 +226,7 @@ def wait_for_players(players):
     # TODO: this is only temporary,
     #  maybe use something automatic, like all players need to sign up in their files...
     input("As game manager, use Enter to start the game after all players have entered: ")
+    print("Game is now running! It's content is displayed to players.")
 
 
 def end_game():
