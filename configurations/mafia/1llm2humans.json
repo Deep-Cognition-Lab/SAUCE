@@ -3,7 +3,7 @@
     {
       "name": "Alex",
       "is_mafia": false,
-      "is_model": false
+      "is_model": true
     },
     {
       "name": "Bill",
@@ -26,7 +26,7 @@
     "max_num_msgs": 30
   },
   "experiment": {
-    "scenario": "You are playing the game of Mafia. Every round a player is eliminated by the mafia during Daytime, and a player is voted out by all remaining players during Daytime.",
+    "scenario": "You are playing the game of Mafia. In the game each player is assigned a role secretly, either mafia or bystander. Every round a player is eliminated by the mafia during Nighttime, then during Daytime all remaining players discuss together who they think the mafia players are and vote out another player. The mafia's goal is to outnumber the bystanders, and the bystanders' goal it to vote out all real mafia.",
     "survey_questions": [
       {
         "id": "vote",

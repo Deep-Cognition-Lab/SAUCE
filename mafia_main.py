@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from persons.asynchronous_persons.mafia_players.llm_mafia import LLMMafia
 
 
 # files that host writes to and players read from
@@ -23,10 +24,12 @@ PERSONAL_VOTE_FILE_FORMAT = "{}_vote.txt"
 NIGHTTIME = "NIGHTTIME"
 DAYTIME = "DAYTIME"
 VOTED_OUT = "VOTED_OUT"
+MAFIA_ROLE = "mafia"
+BYSTANDER_ROLE = "bystander"
 MAFIA_WINS_MESSAGE = "Mafia wins!"
 BYSTANDERS_WIN_MESSAGE = "Bystanders win!"
 GAME_MANAGER_NAME = "Game-Manager"
-RULES_OF_THE_GAME = "The rules of the game are: TODO WRITE THEM!"  # TODO: write those rules!!! (used by the human interface, but maybe also the model?...)
+RULES_OF_THE_GAME = "You are playing the game of Mafia. In the game each player is assigned a role secretly, either mafia or bystander. Every round a player is eliminated by the mafia during Nighttime, then during Daytime all remaining players discuss together who they think the mafia players are and vote out another player. The mafia's goal is to outnumber the bystanders, and the bystanders' goal it to vote out all real mafia."
 # formats for saving texts
 TIME_FORMAT_FOR_TIMESTAMP = "%H:%M:%S"
 MESSAGE_FORMAT = "[{timestamp}] {name}: {message}"
@@ -47,6 +50,10 @@ def touch_file_in_game_dir(file_name):
     return new_file
 
 
+def get_role_string(is_mafia):
+    return MAFIA_ROLE if is_mafia else BYSTANDER_ROLE
+
+
 class Player:
 
     def __init__(self, name, is_mafia, is_model, **kwargs):
@@ -59,7 +66,8 @@ class Player:
         self.personal_vote_file_last_modified = os.path.getmtime(self.personal_vote_file)
         # status is whether the player was vote out
         self.personal_status_file = self._create_personal_file(PERSONAL_STATUS_FILE_FORMAT)
-        self.model = Model(name, is_mafia, **kwargs) if is_model else None
+        self.model = LLMMafia("", name, get_role_string(is_mafia), **kwargs) if is_model else None  # currently using "" as backstory...
+
 
     def _create_personal_file(self, file_name_format):
         return touch_file_in_game_dir(file_name_format.format(self.name))
@@ -72,7 +80,9 @@ class Player:
             self.personal_chat_file_lines_read += len(lines)
             return lines
         else:
-            pass  # TODO !
+            chat_room = game_dir / PUBLIC_DAYTIME_CHAT_FILE   # TODO temporarily it is only for daytime, but should think of better mechanism in case model is mafia
+            answer = self.model.generate_answer(RULES_OF_THE_GAME, chat_room.read_text().splitlines())
+            return [answer] if answer is not None else []
 
     def get_voted_player(self):
         return self.personal_vote_file.read_text().strip()
@@ -87,12 +97,6 @@ class Player:
 
     def eliminate(self):
         self.personal_status_file.write_text(VOTED_OUT)
-
-
-class Model:
-
-    def __init__(self, name, is_mafia, **kwargs):
-        pass  # TODO !
 
 
 def init_game():
@@ -172,7 +176,7 @@ def get_voted_out_player(voting_players, optional_votes_players):
 
 
 def announce_voted_out_player(voted_out_player):
-    role = "mafia" if voted_out_player.is_mafia else "bystander"
+    role = get_role_string(voted_out_player.is_mafia)
     with open(game_dir / PUBLIC_MANAGER_CHAT_FILE, "a") as f:
         voted_out_message = VOTED_OUT_MESSAGE_FORMAT.format(voted_out_player.name, role)
         f.write(format_message(GAME_MANAGER_NAME, voted_out_message))

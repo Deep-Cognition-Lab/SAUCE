@@ -38,7 +38,8 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
         else:
             instruction = "Here is the speaking history so far, including [timestamps]:\n"
             for chat_entry in chat_list:
-                instruction += f"[{chat_entry.time}] {chat_entry.entity.name}: {chat_entry.answer}\n"
+                # instruction += f"[{chat_entry.time}] {chat_entry.entity.name}: {chat_entry.answer}\n"  # TODO temporary change
+                instruction += chat_entry + "\n"  # TODO temporary change
             instruction += "Don't add the time, the timestamp or the [timestamp] in your answer!\n"  # TODO: not necessarily needed with all models, seemed relevant to Llama3.1
         instruction += task
         new_output_prefix = f"[{current_timestamp}] {self.name}: "  # won't be used by all models
@@ -56,11 +57,11 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
                f"or do you prefer to wait for now and see what others will say? " \
                f"Reply only {self.use_turn_token} or {self.pass_turn_token} " \
                f"based on your decision!"
-        how_many_messages_by_it = sum([int(chat_entry.entity == self) for chat_entry in chat_list])
-        if len(chat_list) > 7 and how_many_messages_by_it == 0:
-            return self.use_turn_token
-        elif len(chat_list) > 15 and how_many_messages_by_it < 2:
-            task += f"Don't forget to choose {self.use_turn_token} once in a while!"
+        # how_many_messages_by_it = sum([int(chat_entry.entity == self) for chat_entry in chat_list])
+        # if len(chat_list) > 7 and how_many_messages_by_it == 0:
+        #     return self.use_turn_token
+        # elif len(chat_list) > 15 and how_many_messages_by_it < 2:
+        #     task += f"Don't forget to choose {self.use_turn_token} once in a while!"
         if self.in_context_learning:
             task += f"\nHere is an example:\n" \
                     f"[10:35:40] Alex: Hello everyone! How are you?\n" \
@@ -99,15 +100,16 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
 
     def generate_answer(self, experiment_scenario: str, chat_list: List[ChatEntry]
                         ) -> Union[ChatEntry, None]:
-        print(colored(f"{self.name}'s turn", "green"))
+        # print(colored(f"{self.name}'s turn", "green"))  # TODO temporary change
         context = self.create_context_for_scheduler(experiment_scenario, chat_list)
         if self.should_generate_answer(context):
-            log.info(colored(f"Model chose to generate! ({self.name}'s turn)", "green"))
+            # log.info(colored(f"Model chose to generate! ({self.name}'s turn)", "green"))  # TODO temporary change
             prompt = self.create_prompt(experiment_scenario, chat_list)
             output = self.generation_model.generate(prompt)
             answer = self._customized_model_post_process_output(output)
             current_time = time.strftime("%H:%M:%S")
-            return ChatEntry(entity=self, prompt=prompt, answer=answer, time=current_time)
+            # return ChatEntry(entity=self, prompt=prompt, answer=answer, time=current_time)  # TODO temporary change
+            return f"[{current_time}] {self.name}: {answer}\n"
         else:
-            log.info(colored(f"Model chose not to generate... ({self.name}'s turn)", "green"))
+            # log.info(colored(f"Model chose not to generate... ({self.name}'s turn)", "green"))  # TODO temporary change
             return None

@@ -1,19 +1,19 @@
 {
   "persons": [
     {
-      "class": "async_human_mafia",
-      "name": "Sam",
-      "background_story": "You like party games"
-    },
-    {
-      "class": "async_human_mafia",
-      "name": "Ariel",
-      "background_story": "You are here only for the participation reward"
-    },
-    {
-      "class": "async_human_mafia",
       "name": "Alex",
-      "background_story": "You are doing us a favor by playing"
+      "is_mafia": false,
+      "is_model": false
+    },
+    {
+      "name": "Bill",
+      "is_mafia": false,
+      "is_model": false
+    },
+    {
+      "name": "Casey",
+      "is_mafia": true,
+      "is_model": false
     }
   ],
   "host": {

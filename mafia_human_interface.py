@@ -4,7 +4,7 @@ from mafia_main import DIRS_PREFIX, PLAYER_NAMES_FILE, MAFIA_NAMES_FILE, PHASE_S
     NIGHTTIME, WHO_WINS_FILE, PUBLIC_MANAGER_CHAT_FILE, PUBLIC_DAYTIME_CHAT_FILE, \
     PUBLIC_NIGHTTIME_CHAT_FILE, PERSONAL_CHAT_FILE_FORMAT, PERSONAL_VOTE_FILE_FORMAT, \
     REMAINING_PLAYERS_FILE, format_message, VOTED_OUT, PERSONAL_STATUS_FILE_FORMAT, \
-    RULES_OF_THE_GAME
+    RULES_OF_THE_GAME, get_role_string
 from termcolor import colored
 from threading import Thread
 
@@ -66,9 +66,9 @@ def display_lines_from_file(file_name, num_read_lines, display_color):
     with open(game_dir / file_name, "r") as f:
         lines = f.readlines()[num_read_lines:]
     if len(lines) > 0:  # TODO if print() is deleted then remove this if!
-        # print()  # prevents the messages from being printed in the same line as the middle of input  # TODO validate it's not needed and delete if so
+        print()  # prevents the messages from being printed in the same line as the middle of input  # TODO validate it's not needed and delete if so
         for line in lines:
-            print(colored(line, display_color))  # TODO maybe need display_line func for special format?
+            print(colored(line.strip(), display_color))  # TODO maybe need display_line func for special format?
     return len(lines)
 
 
@@ -124,7 +124,7 @@ def welcome_player():
     print(colored(RULES_OF_THE_GAME, MANAGER_COLOR))
     name = get_player_name_from_user(PLAYER_NAMES_FILE, GET_USER_NAME_MESSAGE)
     is_mafia = get_is_mafia(name)
-    role = "mafia" if is_mafia else "bystander"
+    role = get_role_string(is_mafia)
     role_color = NIGHTTIME_COLOR if is_mafia else DAYTIME_COLOR
     print(colored(ROLE_REVELATION_MESSAGE, MANAGER_COLOR), colored(role, role_color))
     return name, is_mafia
@@ -139,7 +139,6 @@ def game_over_message():
 
 
 def main():
-    # TODO this part until around END should be in welcome_player() func (decide after choosing what it returns)
     name, is_mafia = welcome_player()
     game_read_and_write_loop(name, is_mafia)
     game_over_message()
@@ -147,58 +146,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# TODO: comments after first run:
-#  * shouldn't add print() before empty lines... it's too much
 #  * maybe manager messages of votes should be in red/light blue (because only mafia should see at nighttime)
-
-# TODO remove if parallelism works
-"""
-The following is a piece of code that might solve my problem of reading and writing on the same time (+/-, the message is still cut in the middle if typing when it reads something...)
-"""
-
-r"""
-import threading
-import time
-import os
-
-READ_PATH = "/homes/nive/scripts/read_try.txt"
-WRITE_PATH = "/homes/nive/scripts/write_try.txt"
-
-
-def reading_func(reading_path):
-    num_read_lines = 0
-    while True:
-        with open(reading_path, "r") as f:
-            lines = f.readlines()[num_read_lines:]
-        if len(lines) > 0:
-            print()  # prevents the messages from being printed in the same line as the middle of writing
-            for line in lines:
-                print(f"read line: {line.strip()}")
-        num_read_lines += len(lines)
-
-
-def writing_func(writing_path):
-    while True:
-        user_input = input("Enter text to write (or 'q' to quit):\n").strip()
-        if not user_input:
-            continue
-        if user_input.lower() == 'q':
-            break
-        with open(writing_path, 'a') as f:
-            f.write(user_input + '\n')
-
-
-
-def main():
-    read_thread = threading.Thread(target=reading_func, args=(READ_PATH,))
-    read_thread.daemon = True  # reading will be "behind scenes" and will allow write to be stopped (e.g. by Ctrl+C)
-    read_thread.start()
-
-    writing_func(WRITE_PATH)
-
-
-
-if __name__ == "__main__":
-    main()
-"""
