@@ -54,6 +54,16 @@ def get_role_string(is_mafia):
     return MAFIA_ROLE if is_mafia else BYSTANDER_ROLE
 
 
+def log_model_choice(answer):  # TODO this is a temporary patch... refactor
+    model_choices_logs_file = game_dir / "model_choices_logs.txt"
+    if not model_choices_logs_file.exists():
+        model_choices_logs_file.touch()
+    log = "model chose to NOT generate..." if answer is None else "model chose to generate!"
+    with open(model_choices_logs_file, "a") as f:
+        f.write(f"[{time.strftime(TIME_FORMAT_FOR_TIMESTAMP)}] {log}\n")
+
+
+
 class Player:
 
     def __init__(self, name, is_mafia, is_model, **kwargs):
@@ -81,6 +91,7 @@ class Player:
         else:
             chat_room = game_dir / PUBLIC_DAYTIME_CHAT_FILE   # TODO temporarily it is only for daytime, but should think of better mechanism in case model is mafia
             answer = self.model.generate_answer(RULES_OF_THE_GAME, chat_room.read_text().splitlines())
+            log_model_choice(answer)  # TODO this is a temporary patch... refactor
             return [answer] if answer is not None else []
 
     def get_voted_player(self):
