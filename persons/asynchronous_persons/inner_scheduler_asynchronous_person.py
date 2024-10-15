@@ -8,8 +8,8 @@ from functools import cache
 
 log = logging.getLogger(__name__)
 
-DEFAULT_MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct"
-# DEFAULT_MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
+# DEFAULT_MODEL_NAME = "microsoft/Phi-3-mini-4k-instruct"
+DEFAULT_MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
 # prompts patterns:
 INSTRUCTION_INPUT_RESPONSE_PATTERN = "instruction-input-response prompt pattern"
 LLAMA3_PATTERN = "Llama 3 pattern"
