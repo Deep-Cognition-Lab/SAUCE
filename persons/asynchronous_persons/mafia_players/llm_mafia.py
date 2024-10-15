@@ -56,8 +56,10 @@ class LLMMafia(InnerSchedulerAsynchronousPerson):
         task = f"Do you want to speak now and add to the discussion, " \
                f"or do you prefer to wait for now and see what others will say? " \
                f"Remember to choose to speak only if your contribution to the discussion " \
-               f"in the current time will be meaningful enough - Don't be too quiet, " \
-               f"but don't overflow the discussion with your messages! " \
+               f"in the current time will be meaningful enough - don't overflow the discussion " \
+               f"with your messages! Pay attention to the amount of messages with your name " \
+               f"compared to the amount of messages with names of other players " \
+               f"and let them have their turn too! " \
                f"Reply only {self.use_turn_token} or {self.pass_turn_token} " \
                f"based on your decision!"
         # how_many_messages_by_it = sum([int(chat_entry.entity == self) for chat_entry in chat_list])
