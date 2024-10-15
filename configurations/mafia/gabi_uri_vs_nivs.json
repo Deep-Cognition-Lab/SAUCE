@@ -1,0 +1,53 @@
+{
+  "persons": [
+    {
+      "name": "Gabi",
+      "is_mafia": true,
+      "is_model": false
+    },
+    {
+      "name": "Uri",
+      "is_mafia": true,
+      "is_model": false
+    },
+    {
+      "name": "Niv1",
+      "is_mafia": false,
+      "is_model": false
+    },
+    {
+      "name": "Niv2",
+      "is_mafia": false,
+      "is_model": false
+    },
+    {
+      "name": "Niv3",
+      "is_mafia": false,
+      "is_model": false
+    },
+    {
+      "name": "Niv4",
+      "is_mafia": false,
+      "is_model": false
+    }
+  ],
+  "host": {
+    "class": "Round Robin Host",
+    "start_person_index": 0,
+    "skip": 1
+  },
+  "endType": {
+    "class": "iteration",
+    "max_num_msgs": 30
+  },
+  "experiment": {
+    "scenario": "You are playing the game of Mafia. In the game each player is assigned a role secretly, either mafia or bystander. Every round a player is eliminated by the mafia during Nighttime, then during Daytime all remaining players discuss together who they think the mafia players are and vote out another player. The mafia's goal is to outnumber the bystanders, and the bystanders' goal it to vote out all real mafia.",
+    "survey_questions": [
+      {
+        "id": "vote",
+        "iterations": [10],
+        "question": "Who do you want to vote out?"
+      }
+    ]
+  }
+}
