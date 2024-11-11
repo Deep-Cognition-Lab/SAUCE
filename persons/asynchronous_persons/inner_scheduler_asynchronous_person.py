@@ -36,20 +36,20 @@ def init_hugging_face_model(model_name: str, is_pretrained: bool = True) -> Hugg
 class InnerSchedulerAsynchronousPerson(AsynchronousPerson, ABC):
     def __init__(self, background_story: str, name: str,
                  generation_model_name: str = DEFAULT_MODEL_NAME,
-                 inner_scheduler_model_name: str = DEFAULT_MODEL_NAME, *args, **kwargs):
+                 scheduling_model_name: str = DEFAULT_MODEL_NAME, *args, **kwargs):
         super().__init__(background_story, name, *args, **kwargs)
         self.is_generation_model_shared = kwargs.get("is_generation_model_shared", True)
-        self.is_inner_scheduler_model_shared = kwargs.get("is_inner_scheduler_model_shared", True)
+        self.is_scheduling_model_shared = kwargs.get("is_scheduling_model_shared", True)
         self.generation_model_name = generation_model_name
-        self.inner_scheduler_model_name = inner_scheduler_model_name
+        self.scheduling_model_name = scheduling_model_name
         if self.is_generation_model_shared:
             self.generation_model = get_shared_model(self.generation_model_name)
         else:
             self.generation_model = init_hugging_face_model(self.generation_model_name)
-        if self.is_inner_scheduler_model_shared:
-            self.inner_scheduler_model = get_shared_model(self.inner_scheduler_model_name)
+        if self.is_scheduling_model_shared:
+            self.scheduling_model = get_shared_model(self.scheduling_model_name)
         else:
-            self.inner_scheduler_model = init_hugging_face_model(self.inner_scheduler_model_name)
+            self.scheduling_model = init_hugging_face_model(self.scheduling_model_name)
 
     @abstractmethod
     def create_context_for_scheduler(self, experiment_scenario: str, chat_list: List[ChatEntry]
@@ -64,7 +64,7 @@ class InnerSchedulerAsynchronousPerson(AsynchronousPerson, ABC):
     def should_generate_answer(self, context: str) -> bool:
         """
         Decides whether to currently generate an answer, based on the context,
-        using self.inner_scheduler_model.
+        using self.scheduling_model.
         """
         raise NotImplementedError()
 

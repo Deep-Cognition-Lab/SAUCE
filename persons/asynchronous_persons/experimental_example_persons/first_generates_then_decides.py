@@ -67,9 +67,9 @@ class FirstGeneratesThenDecides(InnerSchedulerAsynchronousPerson):
 
     def should_generate_answer(self, scheduler_prompt: str) -> bool:
         """
-        Decides whether to output the generated potential answer, using self.inner_scheduler_model.
+        Decides whether to output the generated potential answer, using self.scheduling_model.
         """
-        scheduling_decision = self.inner_scheduler_model.generate(scheduler_prompt)
+        scheduling_decision = self.scheduling_model.generate(scheduler_prompt)
         scheduling_decision = scheduling_decision.split("### Response:")[1]
         scheduling_decision = scheduling_decision.strip().split("</s>")[0].split("\n")[0]
         scheduling_decision = scheduling_decision.removeprefix(f"{self.name}: ")
