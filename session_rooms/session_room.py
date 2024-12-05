@@ -30,7 +30,7 @@ class SessionRoom:
         log.info("Session room is running")
 
         output = ExperimentOutput()
-        while not self.experiment.end_type.did_end(self):
+        while not self.experiment.end_type.did_end(self, is_unanimity_experiment=True):
             self.ask_survey_questions_if_needed(output)
             new_chat_entry = self.iterate()
             if new_chat_entry is not None:
