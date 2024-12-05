@@ -51,9 +51,10 @@ class SessionRoom:
         """
 
         # Keep only the survey questions that should be asked at the current iteration.
-        should_keep = lambda cur_len, trigger: (cur_len in trigger) or \
-                                               f"{trigger}".lower() == "always" or \
-                                               (-1 in trigger and self.experiment.end_type.did_end(self))
+        should_keep = lambda cur_len, trigger: (isinstance(trigger, list) and cur_len in trigger) or (
+                                                isinstance(trigger, str) and trigger.lower() == "always") or (
+                                                isinstance(trigger, list) and -1 in trigger and self.experiment.end_type.did_end(self))
+
         survey_questions = [q for q in self.experiment.survey_questions \
                             if should_keep(len(self.chat_room), q.get("iterations"))]
 
