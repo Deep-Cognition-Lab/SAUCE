@@ -21,63 +21,62 @@ class EndTypeUnanimity(EndType):
         """
         Initialize with a maximum number of messages.
         """
+        super().__init__(*args, **kwargs)
         self.max_num_msgs = max_num_msgs
-        self.completed_rounds = []  # Store completed rounds of votes
-        self.current_round_votes = []  # Track votes in the current round
-        self.is_unanimous = False  # Tracks whether unanimity has been reached
+        self.unanimity_status = None
 
-    def handle_votes(self, session_room: SessionRoom):
+    def is_unanimous(self, session_room: SessionRoom):
         """
-        Collects votes from the latest message in the session and tracks complete rounds.
+        Checks if the current round of votes is unanimous.
+
+        This method determines whether the most recent message completes a round of votes,
+        then checks for unanimity across the latest round.
+
+        :param session_room: The session room containing the chat and experiment data.
+        :return: True if the current round is unanimous, False otherwise.
         """
+
         num_jurors = len(session_room.experiment.persons)
 
+        if not session_room.chat_room:
+            return False
+
         # Get the latest message's vote
-        if session_room.chat_room:
-            last_message = session_room.chat_room[-1].answer.strip()
-            print(f"\033[92mProcessing vote: {last_message}\033[0m")  # Debug: Show the vote being processed (Green)
+        last_message = session_room.chat_room[-1].answer.strip()
+        current_entity = session_room.chat_room[-1].entity
+        print(f"Processing vote: {last_message}, Entity: {current_entity}")  # Debug
 
-            # Error handle invalid input (for the main flow, not survey)
-            if last_message[0] not in "01":
-                raise ValueError("Invalid input: Votes must start with '0' (not guilty) or '1' (guilty).")
+        # Error handle invalid input (for the main flow, not survey)
+        if last_message[0] not in "01":
+            raise ValueError("Invalid input: Votes must start with '0' (not guilty) or '1' (guilty).")
 
-            # Append vote to current round
-            self.current_round_votes.append(last_message[0])
-            print(
-                f"\033[92mCurrent round votes: {self.current_round_votes}\033[0m")  # Debug: Show current round state (Green)
+        # Check if this is the end of the round
+        if current_entity == session_room.experiment.persons[-1]:
+            votes = [message.answer.strip()[0] for message in session_room.chat_room[-num_jurors:]]
+            self.unanimity_status = votes
+            print(f"\033[92mRound votes: {votes}\033[0m")  # Debug: Show current round votes (Green)
 
-            # If the current round is complete, move it to completed rounds
-            if len(self.current_round_votes) == num_jurors:
-                self.completed_rounds.append(self.current_round_votes)
-                print(f"\033[92mCompleted round: {self.completed_rounds[-1]}\033[0m")  # Debug: Show completed round (Green)
-                self.current_round_votes = []  # Reset for the next round
+            # Check for unanimity
+            if all(vote == votes[0] for vote in votes):
+                self.unanimity_status = "Guilty" if votes[0] == "1" else "Not Guilty"
+                return True
 
-    def check_unanimity(self) -> bool:
-        """
-        Check if the latest completed round is unanimous.
-        :return: True if the last completed round is unanimous, False otherwise.
-        """
-        if self.completed_rounds:
-            last_round = self.completed_rounds[-1]
-            return all(vote == last_round[0] for vote in last_round)
         return False
 
-    def did_end(self, session_room: SessionRoom, is_unanimity_experiment: bool = False) -> bool:
+    def did_end(self, session_room: SessionRoom) -> bool:
         """
-        Ends when all jurors agree in the latest complete round or max messages are reached.
+        Determines whether the session should end.
 
-        :param is_unanimity_experiment: Flag to determine if this is an experiment (True) or survey (False).
+        The session ends if either:
+        1. Unanimity is reached in the latest round of votes.
+        2. The maximum number of messages has been reached.
+
+        :param session_room: The session room containing the chat and experiment data.
+        :return: True if the session should end, False otherwise.
         """
-        if is_unanimity_experiment:
-            # Process the latest vote and track rounds
-            self.handle_votes(session_room)
 
-            # Update the unanimity status
-            self.is_unanimous = self.check_unanimity()
-
-        # Always check if unanimity has been reached
-        if self.is_unanimous:
-            print(f"\033[92mUnanimity reached: {self.completed_rounds[-1]}\033[0m")  # Debug: Show unanimous decision (Green)
+        if self.is_unanimous(session_room):
+            print(f"\033[92mUnanimity reached: {self.unanimity_status}\033[0m")
             return True
 
         # Fallback: Check max message limit
