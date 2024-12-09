@@ -61,6 +61,8 @@ class EndTypeUnanimity(EndType):
                 self.unanimity_status = "Guilty" if votes[0] == "1" else "Not Guilty"
                 return True
 
+            print(f"\033[91mUnanimity Not Reached.\033[0m")  # Debug: Show current round votes (Green)
+
         return False
 
     def did_end(self, session_room: SessionRoom) -> bool:
@@ -80,4 +82,8 @@ class EndTypeUnanimity(EndType):
             return True
 
         # Fallback: Check max message limit
-        return session_room.session_length >= self.max_num_msgs
+        if session_room.session_length >= self.max_num_msgs:
+            print(f"\033[93mMaximum allowed number of messages reached.\033[0m")  # Yellow for warning
+            return True
+
+        return False
