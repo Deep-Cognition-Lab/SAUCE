@@ -29,9 +29,9 @@
     "scenario": "The accused has been charged with theft. The evidence includes a witness who claims they saw the accused leaving the crime scene, fingerprints on the stolen item matching the accused, and no clear alibi from the accused. Your task is to deliberate and decide whether the accused is guilty or not guilty based on the evidence.",
     "survey_questions": [
       {
-        "id": "vote_reasoning",
+        "id": "Stab",
         "iterations":[-1],
-        "question": "Do you vote Guilty (1) or Not Guilty (0)? Why?"
+        "question": "Stab Question Here"
       }
     ]
   }
