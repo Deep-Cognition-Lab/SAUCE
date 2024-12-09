@@ -51,10 +51,9 @@ class SessionRoom:
         """
 
         # Keep only the survey questions that should be asked at the current iteration.
-        should_keep = lambda cur_len, trigger: (isinstance(trigger, list) and cur_len in trigger) or (
-                                                isinstance(trigger, str) and trigger.lower() == "always") or (
-                                                isinstance(trigger, list) and -1 in trigger and self.experiment.end_type.did_end(self))
-
+        should_keep = lambda cur_len, trigger: (cur_len in trigger) or \
+                                               f"{trigger}".lower() == "always" or \
+                                               (-1 in trigger and self.experiment.end_type.did_end(self))
         survey_questions = [q for q in self.experiment.survey_questions \
                             if should_keep(len(self.chat_room), q.get("iterations"))]
 
@@ -73,8 +72,7 @@ class SessionRoom:
             survey_entry = ChatEntry(System(), "", survey_question["question"])
             log.info(survey_entry)
             # Copy the chat room, so it can later "forget" the survey question.
-            #chat_room_with_survery = copy.deepcopy(self.chat_room) + [survey_entry]
-            chat_room_with_survey = list(self.chat_room) + [survey_entry]
+            chat_room_with_survey = copy.deepcopy(self.chat_room) + [survey_entry]
 
             for next_person in self.experiment.persons:
                 new_chat_entry = next_person.generate_answer(
