@@ -39,8 +39,9 @@ example
         "id": "",
         // what question should be asked
         "question": "",
-        // in what iteration ask the question accepted values are 1.list of unsigned int or -1(indicating the last iteration) 2.The str always
-        "iterations":"always" | [1, 5, 4],
+        // in what iteration ask the question accepted values are 1.list of unsigned int or -1(indicating the last iteration) 
+        // 2.The str "always", passed via a list.
+        "iterations":["always"] | [1, 5, 4],
 
       }
     ]
