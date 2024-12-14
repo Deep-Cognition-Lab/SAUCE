@@ -23,44 +23,40 @@ class Person4_0(Person):
 
     def generate_answer(self, experiment_scenario: str, chat_list: List[ChatEntry]):
         """
-        Generate GPT-4 response as an echo chamber: Return the entire chat history as the answer.
+        Generate GPT-4 response as a juror. The response starts with '1' (guilty) or '0' (not guilty),
+        followed by a justification of the decision.
         """
-        # Prepare the full chat history as a single string
-        echo_message = "\n".join(
-            [f"{entry.entity.name}: {entry.answer}" for entry in chat_list]
-        ) or "The conversation history is empty."
+        # Compile the chat history
+        chat_history = "\n".join(
+            [f"{entry.entity.name}: {entry.answer}" for entry in chat_list]) or "No prior conversation."
+        print(f"DEBUG: Chat History Sent to GPT-4:\n{chat_history}")
 
-        print("\n\n\n")
-        print(f"\033[93mDEBUG: Echo Message Content Sent to GPT-4:\n{echo_message}\033[0m")  # Yellow text
+        # Define the juror's task and perspective
+        juror_role = (
+            f"You are {self.name}, a juror. {self.background_story.strip()} "
+            f"Your task is to decide if the accused is guilty (1) or not guilty (0). "
+            f"Start your reply with '1' or '0', followed by an explanation of your decision. "
+            f"Example: '1. I believe the evidence is strong because...' or '0. There is reasonable doubt because...'. "
+            f"Scenario: {experiment_scenario}. "
+            f"Consider the prior conversation when making your decision."
+        )
 
-        # Create a simple prompt for GPT-4 to echo the conversation
+        # Create the GPT-4 prompt
         generated_prompt = [
-            {
-                "role": "system",
-                "content": (
-                    "You are GPT-4, a highly advanced language model. Your task is to echo the conversation history "
-                    "exactly as it is provided, including participant names and responses. Do not add headers such as "
-                    "'Conversation so far:' or modify the format in any way. Just echo the text verbatim."
-                )
-            },
-            {
-                "role": "user",
-                "content": f"{echo_message}"
-            }
+            {"role": "system", "content": juror_role},
+            {"role": "user", "content": f"Conversation so far:\n{chat_history}"}
         ]
 
-        # Call OpenAI's API to generate a response
+        # Call GPT-4 for the response
         try:
-            full_response = openai.ChatCompletion.create(
+            response = openai.ChatCompletion.create(
                 model=self.model_name,
                 messages=generated_prompt,
                 max_tokens=200,
-                n=1,
-                temperature=0.0,  # Make the response deterministic
+                temperature=0.7,  # Add randomness to simulate deliberation
             )
-            # Retrieve the generated response
-            output_text: str = full_response.choices[0].message['content']
-            return ChatEntry(entity=self, prompt=generated_prompt, answer=output_text)
+            output_text = response.choices[0].message['content']
+            return ChatEntry(entity=self, prompt=generated_prompt, answer=output_text.strip())
         except openai.error.OpenAIError as e:
             print(f"OpenAI API Error: {e}")
             return ChatEntry(entity=self, prompt=generated_prompt, answer="Error: Unable to generate response.")
