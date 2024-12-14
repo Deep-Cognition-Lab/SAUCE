@@ -1,20 +1,20 @@
 {
   "persons": [
     {
-      "class": "human",
+      "class": "person_gpt4_0",
       "name": "Juror 1",
       "background_story": "You are a juror who believes in being fair and impartial.\nYour goal is to carefully evaluate the evidence and make the correct decision.\n"
     },
     {
-      "class": "human",
+      "class": "person_gpt4_0",
       "name": "Juror 2",
       "background_story": "You are a juror who values logic and reason.\nYour goal is to deliberate based on the evidence and ensure a just verdict is reached.\n"
     },
     {
-      "class": "human",
-      "name": "Juror 3",
-      "background_story": "You are a juror who takes their duty seriously and strives to make the right decision based on the facts presented.\n"
-    }
+    "class": "person_gpt4_0",
+    "name": "Juror 3",
+    "background_story": "You are a juror who is strongly inclined to find the accused not guilty.\nYour goal is to always vote 'not guilty' (0) and explain your reasoning based on skepticism about the evidence and belief in the presumption of innocence."
+}
   ],
   "host": {
     "class": "Round Robin Host",
@@ -23,16 +23,9 @@
   },
   "endType": {
     "class": "unanimity",
-    "max_num_msgs": 50
+    "max_num_msgs": 7
   },
   "experiment": {
-    "scenario": "The accused has been charged with theft. The evidence includes a witness who claims they saw the accused leaving the crime scene, fingerprints on the stolen item matching the accused, and no clear alibi from the accused. Your task is to deliberate and decide whether the accused is guilty or not guilty based on the evidence.",
-    "survey_questions": [
-      {
-        "id": "Stab",
-        "iterations":[-1],
-        "question": "Stab Question Here"
-      }
-    ]
+    "scenario": "The accused has been charged with theft. The evidence includes a witness who claims they saw the accused leaving the crime scene, fingerprints on the stolen item matching the accused, and no clear alibi from the accused. Your task is to deliberate and decide whether the accused is guilty or not guilty based on the evidence."
   }
 }

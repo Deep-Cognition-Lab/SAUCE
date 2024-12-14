@@ -29,7 +29,6 @@ class Person4_0(Person):
         # Compile the chat history
         chat_history = "\n".join(
             [f"{entry.entity.name}: {entry.answer}" for entry in chat_list]) or "No prior conversation."
-        print(f"DEBUG: Chat History Sent to GPT-4:\n{chat_history}")
 
         # Define the juror's task and perspective
         juror_role = (
