@@ -72,11 +72,11 @@ class SessionRoom:
             survey_entry = ChatEntry(System(), "", survey_question["question"])
             log.info(survey_entry)
             # Copy the chat room, so it can later "forget" the survey question.
-            chat_room_with_survery = copy.deepcopy(self.chat_room) + [survey_entry]
+            chat_room_with_survey = copy.deepcopy(self.chat_room) + [survey_entry]
 
             for next_person in self.experiment.persons:
                 new_chat_entry = next_person.generate_answer(
-                    self.experiment.scenario, chat_room_with_survery)
+                    self.experiment.scenario, chat_room_with_survey)
                 if new_chat_entry is not None:
                     experiment_output.survey_question[-1].chat_entry.append(
                         new_chat_entry)

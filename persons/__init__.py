@@ -11,6 +11,7 @@ import persons.fake_person
 import persons.person
 import persons.human
 import persons.person_gpt3_5
+import persons.person_gpt4_0  # Import the new Person4_0 class
 import persons.person_openai_completion
 import persons.person_hugging_face
 import persons.asynchronous_persons.async_human
@@ -22,6 +23,10 @@ from .batch import get_batch_dict
 
 load_dotenv()
 
+# Access environment variables
+import os
+api_key = os.getenv("OPENAI_API_KEY")
+org_id = os.getenv("OPENAI_ORG_ID")
 
 @cache  # adding cache avoid creating the dict again and again, but still make it read only
 def __generate_person_dict():
@@ -29,6 +34,7 @@ def __generate_person_dict():
         persons.fake_person.FakePerson.PERSON_TYPE: persons.fake_person.FakePerson,
         persons.human.Human.PERSON_TYPE: persons.human.Human,
         persons.person_gpt3_5.Person3_5.PERSON_TYPE: persons.person_gpt3_5.Person3_5,
+        persons.person_gpt4_0.Person4_0.PERSON_TYPE: persons.person_gpt4_0.Person4_0,
         persons.person_openai_completion.PersonOpenAiCompletion.PERSON_TYPE: persons.person_openai_completion.PersonOpenAiCompletion,
         persons.person_hugging_face.PersonHuggingFace.PERSON_TYPE:  persons.person_hugging_face.PersonHuggingFace,
         persons.asynchronous_persons.async_human.AsynchronousHuman.PERSON_TYPE: persons.asynchronous_persons.async_human.AsynchronousHuman,

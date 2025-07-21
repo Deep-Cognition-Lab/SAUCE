@@ -8,7 +8,7 @@ from . import session_room
 
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 if TYPE_CHECKING:
-    from session_rooms.session_room import SessionRoom
+    from session_room import SessionRoom
 
 
 def get_session_room(name: str) -> type['SessionRoom']:
